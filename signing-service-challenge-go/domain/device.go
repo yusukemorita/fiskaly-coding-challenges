@@ -47,9 +47,14 @@ func BuildSignatureDevice(id string, algorithm string, label ...string) (Signatu
 	}
 
 	// TODO: generate key pair and set value of encodedPrivateKey
-	// TODO: set label when provided
-	return SignatureDevice{
+	device := SignatureDevice{
 		id:        parsedId,
 		algorithm: parsedAlgorithm,
-	}, nil
+	}
+
+	if len(label) > 0 {
+		device.label = label[0]
+	}
+
+	return device, nil
 }

@@ -57,4 +57,23 @@ func TestBuildSignatureDevice(t *testing.T) {
 			t.Errorf("expected initial last signature value to be blank, got: %s", device.lastSignature)
 		}
 	})
+
+	t.Run("sets label when provided", func(t *testing.T) {
+		id := uuid.NewString()
+		algorithm := RSA
+		label := "some-label"
+		device, err := BuildSignatureDevice(
+			id,
+			string(algorithm),
+			"some-label",
+		)
+
+		if err != nil {
+			t.Errorf("expected no error, got: %s", err)
+		}
+
+		if device.label != label {
+			t.Errorf("expected label: %s, got: %s", label, device.label)
+		}
+	})
 }
