@@ -10,7 +10,7 @@ import (
 func TestBuildSignatureDevice(t *testing.T) {
 	t.Run("returns error when uuid is invalid", func(t *testing.T) {
 		id := "invalid-value"
-		_, err := BuildSignatureDevice(id, string(RSA))
+		_, err := BuildSignatureDevice(id, "RSA")
 
 		if err == nil {
 			t.Errorf("expected error when uuid is invalid, got nil")
@@ -29,12 +29,12 @@ func TestBuildSignatureDevice(t *testing.T) {
 		}
 	})
 
-	t.Run("returns SignatureDevice when successful", func(t *testing.T) {
+	t.Run("successfully builds RSA signature device", func(t *testing.T) {
 		id := uuid.NewString()
-		algorithm := RSA
+		algorithmName := "RSA"
 		device, err := BuildSignatureDevice(
 			id,
-			string(algorithm),
+			algorithmName,
 		)
 
 		if err != nil {
@@ -45,8 +45,37 @@ func TestBuildSignatureDevice(t *testing.T) {
 			t.Errorf("expected id: %s, got: %s", id, device.id.String())
 		}
 
-		if device.algorithm != algorithm {
-			t.Errorf("expected algorithm: %s, got: %s", algorithm, device.algorithm)
+		if device.algorithmName != algorithmName {
+			t.Errorf("expected algorithm: %s, got: %s", algorithmName, device.algorithmName)
+		}
+
+		if device.signatureCounter != 0 {
+			t.Errorf("expected initial signature counter value to be 0, got: %d", device.signatureCounter)
+		}
+
+		if device.lastSignature != "" {
+			t.Errorf("expected initial last signature value to be blank, got: %s", device.lastSignature)
+		}
+	})
+
+	t.Run("successfully builds ECC signature device", func(t *testing.T) {
+		id := uuid.NewString()
+		algorithmName := "ECC"
+		device, err := BuildSignatureDevice(
+			id,
+			algorithmName,
+		)
+
+		if err != nil {
+			t.Errorf("expected no error, got: %s", err)
+		}
+
+		if device.id.String() != id {
+			t.Errorf("expected id: %s, got: %s", id, device.id.String())
+		}
+
+		if device.algorithmName != algorithmName {
+			t.Errorf("expected algorithm: %s, got: %s", algorithmName, device.algorithmName)
 		}
 
 		if device.signatureCounter != 0 {
@@ -60,7 +89,7 @@ func TestBuildSignatureDevice(t *testing.T) {
 
 	t.Run("sets label when provided", func(t *testing.T) {
 		id := uuid.NewString()
-		algorithm := RSA
+		algorithm := "RSA"
 		label := "some-label"
 		device, err := BuildSignatureDevice(
 			id,

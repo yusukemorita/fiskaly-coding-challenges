@@ -7,18 +7,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type SignatureAlgorithm string
-
-const (
-	RSA SignatureAlgorithm = "RSA"
-	ECC SignatureAlgorithm = "ECC"
-)
-
-var supportedAlgorithms = []SignatureAlgorithm{RSA, ECC}
-
 type SignatureDevice struct {
 	id                uuid.UUID
-	algorithm         SignatureAlgorithm
+	algorithmName     string
 	encodedPrivateKey []byte
 	// (optional) user provided string to be displayed in the UI
 	label string
@@ -28,28 +19,34 @@ type SignatureDevice struct {
 	signatureCounter uint
 }
 
-func BuildSignatureDevice(id string, algorithm string, label ...string) (SignatureDevice, error) {
+func BuildSignatureDevice(id string, algorithmName string, label ...string) (SignatureDevice, error) {
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		err = errors.New(fmt.Sprintf("invalid uuid: %s", err.Error()))
 		return SignatureDevice{}, err
 	}
 
-	var parsedAlgorithm SignatureAlgorithm
+	var algorithm SignatureAlgorithm
 	for _, alg := range supportedAlgorithms {
-		if alg == SignatureAlgorithm(algorithm) {
-			parsedAlgorithm = alg
+		if alg.Name() == algorithmName {
+			algorithm = alg
 			break
 		}
 	}
-	if parsedAlgorithm == "" {
+	if algorithm == nil {
 		return SignatureDevice{}, errors.New("invalid algorithm")
 	}
 
-	// TODO: generate key pair and set value of encodedPrivateKey
+	encodedPrivateKey, err := algorithm.GenerateEncodedPrivateKey()
+	if err != nil {
+		err = errors.New(fmt.Sprintf("private key generation failed: %s", err.Error()))
+		return SignatureDevice{}, err
+	}
+
 	device := SignatureDevice{
-		id:        parsedId,
-		algorithm: parsedAlgorithm,
+		id:                parsedId,
+		algorithmName:     algorithm.Name(),
+		encodedPrivateKey: encodedPrivateKey,
 	}
 
 	if len(label) > 0 {
