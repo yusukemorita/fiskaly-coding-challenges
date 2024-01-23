@@ -59,3 +59,13 @@ func (rsa RSA) GenerateEncodedPrivateKey() ([]byte, error) {
 }
 
 var supportedAlgorithms = []SignatureAlgorithm{RSA{}, ECC{}}
+
+func findSupportedAlgorithm(name string) (algorithm SignatureAlgorithm, found bool) {
+	for _, alg := range supportedAlgorithms {
+		if alg.Name() == name {
+			return alg, true
+		}
+	}
+
+	return nil, false
+}

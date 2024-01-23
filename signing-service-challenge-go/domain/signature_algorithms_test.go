@@ -51,3 +51,23 @@ func TestRSA_GenerateEncodedPrivateKey(t *testing.T) {
 		t.Errorf("decode of generated private key failed: %s", err)
 	}
 }
+
+func TestFindSupportedAlgorithm(t *testing.T) {
+	t.Run("returns found: false when algorithm does not exist", func(t *testing.T) {
+		_, found := findSupportedAlgorithm("INVALID")
+		if found {
+			t.Error("expected found: false")
+		}
+	})
+
+	t.Run("returns algorithm when algorithm exists", func(t *testing.T) {
+		algorithm, found := findSupportedAlgorithm("RSA")
+		if !found {
+			t.Error("expected found: true")
+		}
+
+		if algorithm.Name() != "RSA" {
+			t.Errorf("expected %s, got %s", "RSA", algorithm.Name())
+		}
+	})
+}

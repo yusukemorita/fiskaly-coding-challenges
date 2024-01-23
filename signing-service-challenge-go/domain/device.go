@@ -26,14 +26,8 @@ func BuildSignatureDevice(id string, algorithmName string, label ...string) (Sig
 		return SignatureDevice{}, err
 	}
 
-	var algorithm SignatureAlgorithm
-	for _, alg := range supportedAlgorithms {
-		if alg.Name() == algorithmName {
-			algorithm = alg
-			break
-		}
-	}
-	if algorithm == nil {
+	algorithm, found := findSupportedAlgorithm(algorithmName)
+	if !found {
 		return SignatureDevice{}, errors.New("invalid algorithm")
 	}
 
