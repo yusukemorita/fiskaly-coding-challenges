@@ -11,7 +11,7 @@ func TestRSAAlgorithm_Name(t *testing.T) {
 	}
 }
 
-func TestRsaAlgorithm_GenerateEncodedPrivateKey(t *testing.T) {
+func TestRSAAlgorithm_GenerateEncodedPrivateKey(t *testing.T) {
 	rsa := RSAAlgorithm{}
 	encodedPrivateKey, err := rsa.GenerateEncodedPrivateKey()
 

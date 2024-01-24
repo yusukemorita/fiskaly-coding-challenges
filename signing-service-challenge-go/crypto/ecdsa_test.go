@@ -11,7 +11,7 @@ func TestECCAlgorithm_Name(t *testing.T) {
 	}
 }
 
-func TestEccAlgorithm_GenerateEncodedPrivateKey(t *testing.T) {
+func TestECCAlgorithm_GenerateEncodedPrivateKey(t *testing.T) {
 	ecc := ECCAlgorithm{}
 	encodedPrivateKey, err := ecc.GenerateEncodedPrivateKey()
 
