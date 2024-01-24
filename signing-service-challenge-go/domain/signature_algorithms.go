@@ -57,18 +57,3 @@ func (rsa rsaAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 
 	return privateKey, nil
 }
-
-var supportedAlgorithms = []signatureAlgorithm{
-	rsaAlgorithm{},
-	eccAlgorithm{},
-}
-
-func FindSupportedAlgorithm(name string) (signatureAlgorithm, bool) {
-	for _, algorithm := range supportedAlgorithms {
-		if algorithm.Name() == name {
-			return algorithm, true
-		}
-	}
-
-	return nil, false
-}
