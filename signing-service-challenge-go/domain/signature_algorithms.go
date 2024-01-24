@@ -63,7 +63,7 @@ var supportedAlgorithms = []signatureAlgorithm{
 	eccAlgorithm{},
 }
 
-func findSupportedAlgorithm(name string) (signatureAlgorithm, bool) {
+func FindSupportedAlgorithm(name string) (signatureAlgorithm, bool) {
 	for _, algorithm := range supportedAlgorithms {
 		if algorithm.Name() == name {
 			return algorithm, true

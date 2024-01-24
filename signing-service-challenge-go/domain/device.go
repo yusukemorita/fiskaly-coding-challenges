@@ -19,18 +19,7 @@ type SignatureDevice struct {
 	signatureCounter uint
 }
 
-func BuildSignatureDevice(id string, algorithmName string, label ...string) (SignatureDevice, error) {
-	parsedId, err := uuid.Parse(id)
-	if err != nil {
-		err = errors.New(fmt.Sprintf("invalid uuid: %s", err.Error()))
-		return SignatureDevice{}, err
-	}
-
-	algorithm, found := findSupportedAlgorithm(algorithmName)
-	if !found {
-		return SignatureDevice{}, errors.New("invalid algorithm")
-	}
-
+func BuildSignatureDevice(id uuid.UUID, algorithm signatureAlgorithm, label ...string) (SignatureDevice, error) {
 	encodedPrivateKey, err := algorithm.GenerateEncodedPrivateKey()
 	if err != nil {
 		err = errors.New(fmt.Sprintf("private key generation failed: %s", err.Error()))
@@ -38,7 +27,7 @@ func BuildSignatureDevice(id string, algorithmName string, label ...string) (Sig
 	}
 
 	device := SignatureDevice{
-		id:                parsedId,
+		id:                id,
 		algorithmName:     algorithm.Name(),
 		encodedPrivateKey: encodedPrivateKey,
 	}
