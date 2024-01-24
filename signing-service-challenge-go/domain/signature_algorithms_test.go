@@ -6,8 +6,8 @@ import (
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 )
 
-func TestECC_Name(t *testing.T) {
-	ecc := ECC{}
+func TestEccAlgorithm_Name(t *testing.T) {
+	ecc := eccAlgorithm{}
 	name := ecc.Name()
 
 	if name != "ECC" {
@@ -15,8 +15,8 @@ func TestECC_Name(t *testing.T) {
 	}
 }
 
-func TestECC_GenerateEncodedPrivateKey(t *testing.T) {
-	ecc := ECC{}
+func TestEccAlgorithm_GenerateEncodedPrivateKey(t *testing.T) {
+	ecc := eccAlgorithm{}
 	encodedPrivateKey, err := ecc.GenerateEncodedPrivateKey()
 
 	if err != nil {
@@ -29,8 +29,8 @@ func TestECC_GenerateEncodedPrivateKey(t *testing.T) {
 	}
 }
 
-func TestRSA_Name(t *testing.T) {
-	rsa := RSA{}
+func TestRsaAlgorithm_Name(t *testing.T) {
+	rsa := rsaAlgorithm{}
 	name := rsa.Name()
 
 	if name != "RSA" {
@@ -38,8 +38,8 @@ func TestRSA_Name(t *testing.T) {
 	}
 }
 
-func TestRSA_GenerateEncodedPrivateKey(t *testing.T) {
-	rsa := RSA{}
+func TestRsaAlgorithm_GenerateEncodedPrivateKey(t *testing.T) {
+	rsa := rsaAlgorithm{}
 	encodedPrivateKey, err := rsa.GenerateEncodedPrivateKey()
 
 	if err != nil {

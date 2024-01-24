@@ -7,18 +7,18 @@ import (
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 )
 
-type SignatureAlgorithm interface {
+type signatureAlgorithm interface {
 	Name() string
 	GenerateEncodedPrivateKey() ([]byte, error)
 }
 
-type ECC struct{}
+type eccAlgorithm struct{}
 
-func (ecc ECC) Name() string {
+func (ecc eccAlgorithm) Name() string {
 	return "ECC"
 }
 
-func (ecc ECC) GenerateEncodedPrivateKey() ([]byte, error) {
+func (ecc eccAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 	generator := crypto.ECCGenerator{}
 	keyPair, err := generator.Generate()
 	if err != nil {
@@ -36,13 +36,13 @@ func (ecc ECC) GenerateEncodedPrivateKey() ([]byte, error) {
 	return privateKey, nil
 }
 
-type RSA struct{}
+type rsaAlgorithm struct{}
 
-func (rsa RSA) Name() string {
+func (rsa rsaAlgorithm) Name() string {
 	return "RSA"
 }
 
-func (rsa RSA) GenerateEncodedPrivateKey() ([]byte, error) {
+func (rsa rsaAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 	generator := crypto.RSAGenerator{}
 	keyPair, err := generator.Generate()
 	if err != nil {
@@ -58,12 +58,15 @@ func (rsa RSA) GenerateEncodedPrivateKey() ([]byte, error) {
 	return privateKey, nil
 }
 
-var supportedAlgorithms = []SignatureAlgorithm{RSA{}, ECC{}}
+var supportedAlgorithms = []signatureAlgorithm{
+	rsaAlgorithm{},
+	eccAlgorithm{},
+}
 
-func findSupportedAlgorithm(name string) (algorithm SignatureAlgorithm, found bool) {
-	for _, alg := range supportedAlgorithms {
-		if alg.Name() == name {
-			return alg, true
+func findSupportedAlgorithm(name string) (signatureAlgorithm, bool) {
+	for _, algorithm := range supportedAlgorithms {
+		if algorithm.Name() == name {
+			return algorithm, true
 		}
 	}
 
