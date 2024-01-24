@@ -59,3 +59,25 @@ func (m ECCMarshaler) Decode(privateKeyBytes []byte) (*ECCKeyPair, error) {
 		Public:  &privateKey.PublicKey,
 	}, nil
 }
+
+type ECCAlgorithm struct{}
+
+func (ecc ECCAlgorithm) Name() string {
+	return "ECC"
+}
+
+func (ecc ECCAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
+	generator := ECCGenerator{}
+	keyPair, err := generator.Generate()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	marshaller := NewECCMarshaler()
+	_, privateKey, err := marshaller.Encode(*keyPair)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return privateKey, nil
+}

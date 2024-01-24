@@ -52,3 +52,25 @@ func (m RSAMarshaler) Unmarshal(privateKeyBytes []byte) (*RSAKeyPair, error) {
 		Public:  &privateKey.PublicKey,
 	}, nil
 }
+
+type RSAAlgorithm struct{}
+
+func (rsa RSAAlgorithm) Name() string {
+	return "RSA"
+}
+
+func (rsa RSAAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
+	generator := RSAGenerator{}
+	keyPair, err := generator.Generate()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	marshaller := NewRSAMarshaler()
+	_, privateKey, err := marshaller.Marshal(*keyPair)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return privateKey, nil
+}

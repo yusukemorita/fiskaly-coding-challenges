@@ -7,6 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// Defines the algorithm related functions that `domain` package requires.
+// These operations will be implemented by algorithm specific structs in the
+// `crypto` package.
+// e.g. `RSAAlgorithm`, `ECCAlgorithm`
+type SignatureAlgorithm interface {
+	Name() string
+	GenerateEncodedPrivateKey() ([]byte, error)
+}
+
 type SignatureDevice struct {
 	id                uuid.UUID
 	algorithmName     string
@@ -19,7 +28,7 @@ type SignatureDevice struct {
 	signatureCounter uint
 }
 
-func BuildSignatureDevice(id uuid.UUID, algorithm signatureAlgorithm, label ...string) (SignatureDevice, error) {
+func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...string) (SignatureDevice, error) {
 	encodedPrivateKey, err := algorithm.GenerateEncodedPrivateKey()
 	if err != nil {
 		err = errors.New(fmt.Sprintf("private key generation failed: %s", err.Error()))

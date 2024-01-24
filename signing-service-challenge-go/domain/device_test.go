@@ -3,13 +3,14 @@ package domain
 import (
 	"testing"
 
+	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 	"github.com/google/uuid"
 )
 
 func TestBuildSignatureDevice(t *testing.T) {
 	t.Run("successfully builds RSA signature device", func(t *testing.T) {
 		id := uuid.New()
-		algorithm := rsaAlgorithm{}
+		algorithm := crypto.RSAAlgorithm{}
 		device, err := BuildSignatureDevice(id, algorithm)
 
 		if err != nil {
@@ -35,7 +36,7 @@ func TestBuildSignatureDevice(t *testing.T) {
 
 	t.Run("successfully builds ECC signature device", func(t *testing.T) {
 		id := uuid.New()
-		algorithm := eccAlgorithm{}
+		algorithm := crypto.ECCAlgorithm{}
 		device, err := BuildSignatureDevice(id, algorithm)
 
 		if err != nil {
@@ -61,7 +62,7 @@ func TestBuildSignatureDevice(t *testing.T) {
 
 	t.Run("sets label when provided", func(t *testing.T) {
 		id := uuid.New()
-		algorithm := rsaAlgorithm{}
+		algorithm := crypto.RSAAlgorithm{}
 		label := "some-label"
 		device, err := BuildSignatureDevice(
 			id,
