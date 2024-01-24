@@ -70,13 +70,13 @@ func (ecc ECCAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 	generator := ECCGenerator{}
 	keyPair, err := generator.Generate()
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	marshaller := NewECCMarshaler()
 	_, privateKey, err := marshaller.Encode(*keyPair)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	return privateKey, nil

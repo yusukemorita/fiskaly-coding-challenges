@@ -63,13 +63,13 @@ func (rsa RSAAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 	generator := RSAGenerator{}
 	keyPair, err := generator.Generate()
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	marshaller := NewRSAMarshaler()
 	_, privateKey, err := marshaller.Marshal(*keyPair)
 	if err != nil {
-		return []byte{}, err
+		return nil, err
 	}
 
 	return privateKey, nil
