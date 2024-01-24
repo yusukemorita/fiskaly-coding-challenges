@@ -17,15 +17,15 @@ type SignatureAlgorithm interface {
 }
 
 type SignatureDevice struct {
-	id                uuid.UUID
-	algorithmName     string
-	encodedPrivateKey []byte
+	ID                uuid.UUID
+	AlgorithmName     string
+	EncodedPrivateKey []byte
 	// (optional) user provided string to be displayed in the UI
-	label string
+	Label string
 	// track the last signature created with this device
-	lastSignature string
+	LastSignature string
 	// track how many signatures have been created with this device
-	signatureCounter uint
+	SignatureCounter uint
 }
 
 func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...string) (SignatureDevice, error) {
@@ -36,13 +36,13 @@ func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...s
 	}
 
 	device := SignatureDevice{
-		id:                id,
-		algorithmName:     algorithm.Name(),
-		encodedPrivateKey: encodedPrivateKey,
+		ID:                id,
+		AlgorithmName:     algorithm.Name(),
+		EncodedPrivateKey: encodedPrivateKey,
 	}
 
 	if len(label) > 0 {
-		device.label = label[0]
+		device.Label = label[0]
 	}
 
 	return device, nil

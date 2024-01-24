@@ -28,28 +28,28 @@ func TestBuildSignatureDevice(t *testing.T) {
 			t.Errorf("expected no error, got: %s", err)
 		}
 
-		if device.id != id {
-			t.Errorf("expected id: %s, got: %s", id, device.id.String())
+		if device.ID != id {
+			t.Errorf("expected id: %s, got: %s", id, device.ID.String())
 		}
 
-		if device.algorithmName != algorithm.Name() {
-			t.Errorf("expected algorithm: %s, got: %s", algorithm.Name(), device.algorithmName)
+		if device.AlgorithmName != algorithm.Name() {
+			t.Errorf("expected algorithm: %s, got: %s", algorithm.Name(), device.AlgorithmName)
 		}
 
-		if device.signatureCounter != 0 {
-			t.Errorf("expected initial signature counter value to be 0, got: %d", device.signatureCounter)
+		if device.SignatureCounter != 0 {
+			t.Errorf("expected initial signature counter value to be 0, got: %d", device.SignatureCounter)
 		}
 
-		if device.lastSignature != "" {
-			t.Errorf("expected initial last signature value to be blank, got: %s", device.lastSignature)
+		if device.LastSignature != "" {
+			t.Errorf("expected initial last signature value to be blank, got: %s", device.LastSignature)
 		}
 
-		if string(device.encodedPrivateKey) != string(algorithm.encodedPrivateKey) {
-			t.Errorf("expected encoded private key: %s, got: %s", algorithm.encodedPrivateKey, device.lastSignature)
+		if string(device.EncodedPrivateKey) != string(algorithm.encodedPrivateKey) {
+			t.Errorf("expected encoded private key: %s, got: %s", algorithm.encodedPrivateKey, device.LastSignature)
 		}
 
-		if device.label != "" {
-			t.Errorf("expected label be blank when not provided, got: %s", device.label)
+		if device.Label != "" {
+			t.Errorf("expected label be blank when not provided, got: %s", device.Label)
 		}
 	})
 
@@ -67,8 +67,8 @@ func TestBuildSignatureDevice(t *testing.T) {
 			t.Errorf("expected no error, got: %s", err)
 		}
 
-		if device.label != label {
-			t.Errorf("expected label: %s, got: %s", label, device.label)
+		if device.Label != label {
+			t.Errorf("expected label: %s, got: %s", label, device.Label)
 		}
 	})
 }
