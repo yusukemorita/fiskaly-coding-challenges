@@ -54,14 +54,8 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
-	var algorithm domain.SignatureAlgorithm
-	for _, alg := range crypto.SupportedAlgorithms {
-		if alg.Name() == requestBody.Algorithm {
-			algorithm = alg
-			break
-		}
-	}
-	if algorithm == nil {
+	algorithm, found := crypto.FindSupportedAlgorithm(requestBody.Algorithm)
+	if !found {
 		WriteErrorResponse(response, http.StatusBadRequest, []string{
 			"algorithm is not supported",
 		})
