@@ -11,13 +11,14 @@ func TestFindSupportedAlgorithm(t *testing.T) {
 	})
 
 	t.Run("returns algorithm when algorithm exists", func(t *testing.T) {
-		algorithm, found := FindSupportedAlgorithm("RSA")
+		algorithmName := "RSA"
+		algorithm, found := FindSupportedAlgorithm(algorithmName)
 		if !found {
 			t.Error("expected found: true")
 		}
 
-		if algorithm.Name() != "RSA" {
-			t.Errorf("expected %s, got %s", "RSA", algorithm.Name())
+		if algorithm.Name() != algorithmName {
+			t.Errorf("expected %s, got %s", algorithmName, algorithm.Name())
 		}
 	})
 }
