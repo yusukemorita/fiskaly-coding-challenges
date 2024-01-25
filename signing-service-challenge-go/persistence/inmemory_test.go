@@ -78,3 +78,42 @@ func TestCreate(t *testing.T) {
 		}
 	})
 }
+
+func TestFind(t *testing.T) {
+	t.Run("returns the device when device with id exists", func(t *testing.T) {
+		device := domain.SignatureDevice{
+			ID:                uuid.New(),
+			AlgorithmName:     "RSA",
+			EncodedPrivateKey: []byte("SOME_RSA_KEY"),
+			Label:             "my rsa key",
+		}
+
+		repository := NewInMemorySignatureDeviceRepository()
+		repository.devices[device.ID] = device
+
+		foundDevice, found, err := repository.Find(device.ID)
+		if err != nil {
+			t.Errorf("expected no error, got: %s", err)
+		}
+		if !found {
+			t.Error("expected device to be found")
+		}
+		diff := cmp.Diff(foundDevice, device)
+		if diff != "" {
+			t.Errorf("unexpected difference between original and found device: %s", diff)
+		}
+	})
+
+	t.Run("returns false when device with id does not exist", func(t *testing.T) {
+		id := uuid.New()
+		repository := NewInMemorySignatureDeviceRepository()
+
+		_, found, err := repository.Find(id)
+		if err != nil {
+			t.Errorf("expected no error, got: %s", err)
+		}
+		if found {
+			t.Error("expected found: false")
+		}
+	})
+}
