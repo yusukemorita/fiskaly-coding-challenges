@@ -40,7 +40,6 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	var requestBody CreateSignatureDeviceRequest
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
-		// TODO: better response code?
 		WriteErrorResponse(response, http.StatusBadRequest, []string{
 			http.StatusText(http.StatusBadRequest),
 		})
@@ -48,7 +47,12 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	}
 
 	id, err := uuid.Parse(requestBody.Id)
-	// TODO: handle invalid uuid
+	if err != nil {
+		WriteErrorResponse(response, http.StatusBadRequest, []string{
+			"id is not a valid uuid",
+		})
+		return
+	}
 
 	var algorithm domain.SignatureAlgorithm
 	for _, alg := range crypto.SupportedAlgorithms {
@@ -57,7 +61,12 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 			break
 		}
 	}
-	// TODO: handle invalid algorithm
+	if algorithm == nil {
+		WriteErrorResponse(response, http.StatusBadRequest, []string{
+			"algorithm is not supported",
+		})
+		return
+	}
 
 	device, err := domain.BuildSignatureDevice(id, algorithm)
 	if err != nil {
@@ -66,7 +75,6 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
-	// TODO: what if the id is duplicate?
 	err = s.signatureDeviceRepository.Create(device)
 	if err != nil {
 		// In a real application, this error would be logged and sent to an error notification service

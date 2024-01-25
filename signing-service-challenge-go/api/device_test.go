@@ -90,4 +90,70 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 			t.Errorf("decode of generated private key failed: %s", err)
 		}
 	})
+
+	t.Run("fails when uuid is invalid", func(t *testing.T) {
+		id := "invalid-uuid"
+		algorithm := "RSA"
+		request := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v0/signature_devices",
+			strings.NewReader(fmt.Sprintf(`
+			{
+				"id": "%s",
+				"algorithm": "%s"
+			}`, id, algorithm)),
+		)
+		request.Header.Set("Content-Type", "application/json")
+		responseRecorder := httptest.NewRecorder()
+
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		service := api.NewSignatureService(repository)
+		service.CreateSignatureDevice(responseRecorder, request)
+
+		// check status code
+		expectedStatusCode := http.StatusBadRequest
+		if responseRecorder.Code != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, responseRecorder.Code)
+		}
+
+		// check body
+		body := responseRecorder.Body.String()
+		expectedBody := `{"errors":["id is not a valid uuid"]}`
+		if body != expectedBody {
+			t.Errorf("expected: %s, got: %s", expectedBody, body)
+		}
+	})
+
+	t.Run("fails when algorithm is invalid", func(t *testing.T) {
+		id := uuid.New()
+		algorithm := "ABC"
+		request := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v0/signature_devices",
+			strings.NewReader(fmt.Sprintf(`
+			{
+				"id": "%s",
+				"algorithm": "%s"
+			}`, id, algorithm)),
+		)
+		request.Header.Set("Content-Type", "application/json")
+		responseRecorder := httptest.NewRecorder()
+
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		service := api.NewSignatureService(repository)
+		service.CreateSignatureDevice(responseRecorder, request)
+
+		// check status code
+		expectedStatusCode := http.StatusBadRequest
+		if responseRecorder.Code != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, responseRecorder.Code)
+		}
+
+		// check body
+		body := responseRecorder.Body.String()
+		expectedBody := `{"errors":["algorithm is not supported"]}`
+		if body != expectedBody {
+			t.Errorf("expected: %s, got: %s", expectedBody, body)
+		}
+	})
 }
