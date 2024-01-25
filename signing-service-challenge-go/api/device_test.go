@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/api"
+	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/persistence"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -84,7 +85,9 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		if device.AlgorithmName != algorithm {
 			t.Errorf("algorithm not persisted correctly. expected: %s, got: %s", algorithm, device.AlgorithmName)
 		}
-
-		// TODO: check that encoded key is valid
+		_, err = crypto.NewRSAMarshaler().Unmarshal(device.EncodedPrivateKey)
+		if err != nil {
+			t.Errorf("decode of generated private key failed: %s", err)
+		}
 	})
 }
