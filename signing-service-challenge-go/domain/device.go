@@ -47,3 +47,7 @@ func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...s
 
 	return device, nil
 }
+
+type SignatureDeviceRepository interface {
+	Create(device SignatureDevice) error
+}
