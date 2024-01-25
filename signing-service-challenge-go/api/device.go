@@ -27,6 +27,7 @@ type CreateSignatureDeviceResponse struct {
 type CreateSignatureDeviceRequest struct {
 	Id        string `json:"id"`
 	Algorithm string `json:"algorithm"`
+	Label     string `json:"label"` // optional
 }
 
 func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, request *http.Request) {
@@ -62,7 +63,7 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
-	device, err := domain.BuildSignatureDevice(id, algorithm)
+	device, err := domain.BuildSignatureDevice(id, algorithm, requestBody.Label)
 	if err != nil {
 		// In a real application, this error would be logged and sent to an error notification service
 		WriteInternalError(response)
