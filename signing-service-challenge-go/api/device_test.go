@@ -1,10 +1,11 @@
 package api_test
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/api"
@@ -38,16 +39,14 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 	t.Run("fails when uuid is invalid", func(t *testing.T) {
 		id := "invalid-uuid"
 		algorithm := "RSA"
-		request := httptest.NewRequest(
+		request := newJsonRequest(
 			http.MethodPost,
 			"/api/v0/signature_devices",
-			strings.NewReader(fmt.Sprintf(`
-			{
-				"id": "%s",
-				"algorithm": "%s"
-			}`, id, algorithm)),
+			api.CreateSignatureDeviceRequest{
+				ID:        id,
+				Algorithm: algorithm,
+			},
 		)
-		request.Header.Set("Content-Type", "application/json")
 		responseRecorder := httptest.NewRecorder()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
@@ -71,23 +70,21 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 	t.Run("fails when id already exists", func(t *testing.T) {
 		id := uuid.New()
 		algorithm := "RSA"
-		request := httptest.NewRequest(
+		request := newJsonRequest(
 			http.MethodPost,
 			"/api/v0/signature_devices",
-			strings.NewReader(fmt.Sprintf(`
-			{
-				"id": "%s",
-				"algorithm": "%s"
-			}`, id, algorithm)),
+			api.CreateSignatureDeviceRequest{
+				ID:        id.String(),
+				Algorithm: algorithm,
+			},
 		)
-		request.Header.Set("Content-Type", "application/json")
 		responseRecorder := httptest.NewRecorder()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
 		// create existing device with the same id
 		repository.Create(domain.SignatureDevice{
-			ID: id,
-			AlgorithmName: algorithm,
+			ID:                id,
+			AlgorithmName:     algorithm,
 			EncodedPrivateKey: []byte("SOME_KEY"),
 		})
 		service := api.NewSignatureService(repository)
@@ -110,16 +107,14 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 	t.Run("fails when algorithm is invalid", func(t *testing.T) {
 		id := uuid.New()
 		algorithm := "ABC"
-		request := httptest.NewRequest(
+		request := newJsonRequest(
 			http.MethodPost,
 			"/api/v0/signature_devices",
-			strings.NewReader(fmt.Sprintf(`
-			{
-				"id": "%s",
-				"algorithm": "%s"
-			}`, id, algorithm)),
+			api.CreateSignatureDeviceRequest{
+				ID:        id.String(),
+				Algorithm: algorithm,
+			},
 		)
-		request.Header.Set("Content-Type", "application/json")
 		responseRecorder := httptest.NewRecorder()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
@@ -143,16 +138,14 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 	t.Run("creates a SignatureDevice successfully", func(t *testing.T) {
 		id := uuid.New()
 		algorithm := "RSA"
-		request := httptest.NewRequest(
+		request := newJsonRequest(
 			http.MethodPost,
 			"/api/v0/signature_devices",
-			strings.NewReader(fmt.Sprintf(`
-			{
-				"id": "%s",
-				"algorithm": "%s"
-			}`, id, algorithm)),
+			api.CreateSignatureDeviceRequest{
+				ID:        id.String(),
+				Algorithm: algorithm,
+			},
 		)
-		request.Header.Set("Content-Type", "application/json")
 		responseRecorder := httptest.NewRecorder()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
@@ -204,17 +197,15 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		id := uuid.New()
 		algorithm := "RSA"
 		label := "my RSA key"
-		request := httptest.NewRequest(
+		request := newJsonRequest(
 			http.MethodPost,
 			"/api/v0/signature_devices",
-			strings.NewReader(fmt.Sprintf(`
-			{
-				"id": "%s",
-				"algorithm": "%s",
-				"label": "%s"
-			}`, id, algorithm, label)),
+			api.CreateSignatureDeviceRequest{
+				ID:        id.String(),
+				Algorithm: algorithm,
+				Label:     label,
+			},
 		)
-		request.Header.Set("Content-Type", "application/json")
 		responseRecorder := httptest.NewRecorder()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
@@ -261,4 +252,19 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 			t.Errorf("decode of generated private key failed: %s", err)
 		}
 	})
+}
+
+func newJsonRequest(httpMethod string, path string, serializableData any) *http.Request {
+	jsonBytes, err := json.Marshal(serializableData)
+	if err != nil {
+		panic(fmt.Sprintf("json.Marshal failed: err"))
+	}
+
+	request := httptest.NewRequest(
+		httpMethod,
+		path,
+		bytes.NewReader(jsonBytes),
+	)
+	request.Header.Set("Content-Type", "application/json")
+	return request
 }

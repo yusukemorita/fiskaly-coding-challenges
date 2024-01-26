@@ -13,19 +13,19 @@ type SignatureService struct {
 	signatureDeviceRepository domain.SignatureDeviceRepository
 }
 
-func NewSignatureService(signatureDeviceRepository domain.SignatureDeviceRepository) SignatureService {
+func NewSignatureService(repository domain.SignatureDeviceRepository) SignatureService {
 	return SignatureService{
-		signatureDeviceRepository: signatureDeviceRepository,
+		signatureDeviceRepository: repository,
 	}
 }
 
 // TODO: REST endpoints ...
 type CreateSignatureDeviceResponse struct {
-	Id string `json:"signatureDeviceId"`
+	ID string `json:"signatureDeviceId"`
 }
 
 type CreateSignatureDeviceRequest struct {
-	Id        string `json:"id"`
+	ID        string `json:"id"`
 	Algorithm string `json:"algorithm"`
 	Label     string `json:"label"` // optional
 }
@@ -47,7 +47,7 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
-	id, err := uuid.Parse(requestBody.Id)
+	id, err := uuid.Parse(requestBody.ID)
 	if err != nil {
 		WriteErrorResponse(response, http.StatusBadRequest, []string{
 			"id is not a valid uuid",
@@ -90,7 +90,7 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	}
 
 	responseBody := CreateSignatureDeviceResponse{
-		Id: requestBody.Id,
+		ID: requestBody.ID,
 	}
 	WriteAPIResponse(response, http.StatusCreated, responseBody)
 }
