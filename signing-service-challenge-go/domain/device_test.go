@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/uuid"
@@ -16,6 +17,49 @@ func (device MockSignatureAlgorithm) Name() string {
 
 func (device MockSignatureAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 	return device.encodedPrivateKey, nil
+}
+
+func (device MockSignatureAlgorithm) SignTransaction(encodedPrivateKey []byte, dataToBeSigned []byte) (signature []byte, err error) {
+	return nil, nil
+}
+
+func TestExtendDataToBeSigned(t *testing.T) {
+	t.Run("concatenates data with counter and last signature when counter > 0", func(t *testing.T) {
+		lastSignature := "last-signature"
+		base64EncodedLastSignature := "bGFzdC1zaWduYXR1cmU="
+
+		device := SignatureDevice{
+			LastSignature:    lastSignature,
+			SignatureCounter: 1,
+		}
+		data := "some transaction data"
+
+		got := device.ExtendDataToBeSigned(data)
+		expected := fmt.Sprintf("1_%s_%s", data, base64EncodedLastSignature)
+
+		if got != expected {
+			t.Errorf("expected: %s, got: %s", expected, got)
+		}
+	})
+
+	t.Run("concatenates data with counter and device id when counter == 0", func(t *testing.T) {
+		id := uuid.MustParse("ed40597c-52b7-40bc-9e15-83e4741a102b")
+		base64EncodedID := "ZWQ0MDU5N2MtNTJiNy00MGJjLTllMTUtODNlNDc0MWExMDJi"
+
+		device := SignatureDevice{
+			ID:               id,
+			LastSignature:    "",
+			SignatureCounter: 0,
+		}
+		data := "some transaction data"
+
+		got := device.ExtendDataToBeSigned(data)
+		expected := fmt.Sprintf("0_%s_%s", data, base64EncodedID)
+
+		if got != expected {
+			t.Errorf("expected: %s, got: %s", expected, got)
+		}
+	})
 }
 
 func TestBuildSignatureDevice(t *testing.T) {

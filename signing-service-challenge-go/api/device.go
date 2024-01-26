@@ -145,7 +145,6 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 		device,
 		s.signatureDeviceRepository,
 		requestBody.Data,
-		crypto.FindSupportedAlgorithm,
 	)
 	if err != nil {
 		// TODO: better error handling?
