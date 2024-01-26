@@ -55,6 +55,18 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
+	_, ok, err := s.signatureDeviceRepository.Find(id)
+	if err != nil {
+		WriteInternalError(response)
+		return
+	}
+	if ok {
+		WriteErrorResponse(response, http.StatusBadRequest, []string{
+			"duplicate id",
+		})
+		return
+	}
+
 	algorithm, found := crypto.FindSupportedAlgorithm(requestBody.Algorithm)
 	if !found {
 		WriteErrorResponse(response, http.StatusBadRequest, []string{

@@ -9,6 +9,7 @@ import (
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/api"
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
+	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/persistence"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
@@ -62,6 +63,45 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		// check body
 		body := responseRecorder.Body.String()
 		expectedBody := `{"errors":["id is not a valid uuid"]}`
+		if body != expectedBody {
+			t.Errorf("expected: %s, got: %s", expectedBody, body)
+		}
+	})
+
+	t.Run("fails when id already exists", func(t *testing.T) {
+		id := uuid.New()
+		algorithm := "RSA"
+		request := httptest.NewRequest(
+			http.MethodPost,
+			"/api/v0/signature_devices",
+			strings.NewReader(fmt.Sprintf(`
+			{
+				"id": "%s",
+				"algorithm": "%s"
+			}`, id, algorithm)),
+		)
+		request.Header.Set("Content-Type", "application/json")
+		responseRecorder := httptest.NewRecorder()
+
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		// create existing device with the same id
+		repository.Create(domain.SignatureDevice{
+			ID: id,
+			AlgorithmName: algorithm,
+			EncodedPrivateKey: []byte("SOME_KEY"),
+		})
+		service := api.NewSignatureService(repository)
+		service.CreateSignatureDevice(responseRecorder, request)
+
+		// check status code
+		expectedStatusCode := http.StatusBadRequest
+		if responseRecorder.Code != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, responseRecorder.Code)
+		}
+
+		// check body
+		body := responseRecorder.Body.String()
+		expectedBody := `{"errors":["duplicate id"]}`
 		if body != expectedBody {
 			t.Errorf("expected: %s, got: %s", expectedBody, body)
 		}
