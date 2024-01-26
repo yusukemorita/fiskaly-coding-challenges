@@ -90,7 +90,7 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	}
 
 	responseBody := CreateSignatureDeviceResponse{
-		ID: requestBody.ID,
+		ID: device.ID.String(),
 	}
 	WriteAPIResponse(response, http.StatusCreated, responseBody)
 }
