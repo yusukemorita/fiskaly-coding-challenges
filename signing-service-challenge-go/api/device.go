@@ -42,7 +42,7 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	err := json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
 		WriteErrorResponse(response, http.StatusBadRequest, []string{
-			http.StatusText(http.StatusBadRequest),
+			"invalid json",
 		})
 		return
 	}
