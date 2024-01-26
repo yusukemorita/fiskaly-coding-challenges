@@ -118,3 +118,56 @@ func TestFind(t *testing.T) {
 		}
 	})
 }
+
+func TestUpdate(t *testing.T) {
+	t.Run("updates attributes when device with id is found", func(t *testing.T) {
+		id := uuid.New()
+		device := domain.SignatureDevice{
+			ID:                id,
+			Algorithm:         crypto.RSAAlgorithm{},
+			EncodedPrivateKey: []byte("SOME_RSA_KEY"),
+			Label:             "my rsa key",
+		}
+
+		repository := NewInMemorySignatureDeviceRepository()
+		repository.devices[device.ID] = device
+
+		updatedDevice := domain.SignatureDevice{
+			ID:                id,
+			Algorithm:         crypto.RSAAlgorithm{},
+			EncodedPrivateKey: []byte("SOME_RSA_KEY"),
+			Label:             "my rsa key",
+			SignatureCounter:  1,
+			LastSignature:     "last-signature",
+		}
+
+		err := repository.Update(updatedDevice)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+
+		got, ok := repository.devices[device.ID]
+		if !ok {
+			t.Error("device not found")
+		}
+		if got.SignatureCounter != updatedDevice.SignatureCounter || got.LastSignature != updatedDevice.LastSignature {
+			t.Error("device not updated correctly")
+		}
+	})
+
+	t.Run("returns error when device with id is not found", func(t *testing.T) {
+		id := uuid.New()
+		device := domain.SignatureDevice{
+			ID:                id,
+			Algorithm:         crypto.RSAAlgorithm{},
+			EncodedPrivateKey: []byte("SOME_RSA_KEY"),
+			Label:             "my rsa key",
+		}
+
+		repository := NewInMemorySignatureDeviceRepository()
+		err := repository.Update(device)
+		if err == nil {
+			t.Error("expected error when updating non-existent device")
+		}
+	})
+}
