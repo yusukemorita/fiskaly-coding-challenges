@@ -1,10 +1,8 @@
 package crypto
 
 import (
-	"crypto"
 	"crypto/ecdsa"
 	"crypto/rsa"
-	"crypto/sha256"
 	"testing"
 )
 
@@ -22,14 +20,12 @@ func TestRSASigner_Sign(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hash := sha256.New()
-	_, err = hash.Write([]byte(dataToBeSigned))
+	digest, err := computeDigestWithHashFunction([]byte(dataToBeSigned))
 	if err != nil {
 		t.Fatal(err)
 	}
-	digest := hash.Sum(nil)
 
-	err = rsa.VerifyPKCS1v15(keyPair.Public, crypto.SHA256, digest, signature)
+	err = rsa.VerifyPKCS1v15(keyPair.Public, hashFunction, digest, signature)
 	if err != nil {
 		t.Errorf("signature verification failed: %s", err)
 	}
