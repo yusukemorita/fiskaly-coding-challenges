@@ -80,6 +80,6 @@ func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...s
 
 type SignatureDeviceRepository interface {
 	Create(device SignatureDevice) error
-	Find(id uuid.UUID) (SignatureDevice, bool, error)
 	Update(device SignatureDevice) error
+	Find(id uuid.UUID) (SignatureDevice, bool, error)
 }
