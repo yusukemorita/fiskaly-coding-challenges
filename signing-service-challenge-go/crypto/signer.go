@@ -6,33 +6,29 @@ import (
 	"crypto/rsa"
 )
 
+// TODO: is this a good hash to use?
+const hashFunction = stdCrypto.SHA256
+
 // Signer defines a contract for different types of signing implementations.
 type Signer interface {
 	Sign(dataToBeSigned []byte) ([]byte, error)
 }
-
-// TODO: implement RSA and ECDSA signing ...
 
 type RSASigner struct {
 	keyPair RSAKeyPair
 }
 
 func (signer RSASigner) Sign(dataToBeSigned []byte) ([]byte, error) {
-	sha256 := stdCrypto.SHA256 // TODO: is this a good hash to use?
-
-	// compute digest of `dataToBeSigned` with SHA256
-	hash := sha256.New()
-	_, err := hash.Write(dataToBeSigned)
+	digest, err := computeDigestWithHashFunction(dataToBeSigned)
 	if err != nil {
 		return nil, err
 	}
-	digest := hash.Sum(nil)
 
 	// TODO: use PSS or PKCS?
 	return rsa.SignPKCS1v15(
 		rand.Reader,
 		signer.keyPair.Private,
-		sha256,
+		hashFunction,
 		digest,
 	)
 }
@@ -41,7 +37,20 @@ type ECCSigner struct {
 	keyPair ECCKeyPair
 }
 
-// TODO: test 
 func (signer ECCSigner) Sign(dataToBeSigned []byte) ([]byte, error) {
-	return signer.keyPair.Private.Sign(rand.Reader, dataToBeSigned, nil)
+	digest, err := computeDigestWithHashFunction(dataToBeSigned)
+	if err != nil {
+		return nil, err
+	}
+
+	return signer.keyPair.Private.Sign(rand.Reader, digest, nil)
+}
+
+func computeDigestWithHashFunction(b []byte) ([]byte, error) {
+	hash := hashFunction.New()
+	_, err := hash.Write(b)
+	if err != nil {
+		return nil, err
+	}
+	return hash.Sum(nil), nil
 }
