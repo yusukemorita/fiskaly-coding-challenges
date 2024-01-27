@@ -25,7 +25,7 @@ func TestRSASigner_Sign(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = rsa.VerifyPKCS1v15(keyPair.Public, hashFunction, digest, signature)
+	err = rsa.VerifyPSS(keyPair.Public, hashFunction, digest, signature, nil)
 	if err != nil {
 		t.Errorf("signature verification failed: %s", err)
 	}

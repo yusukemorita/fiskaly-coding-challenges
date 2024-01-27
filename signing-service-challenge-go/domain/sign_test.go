@@ -56,11 +56,12 @@ func TestSignTransaction(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = rsa.VerifyPKCS1v15(
+		err = rsa.VerifyPSS(
 			keyPair.Public,
 			stdCrypto.SHA256,
 			digest,
 			decodedSignature,
+			nil,
 		)
 		if err != nil {
 			t.Errorf("signature is not valid. err: %s", err)

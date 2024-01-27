@@ -24,12 +24,12 @@ func (signer RSASigner) Sign(dataToBeSigned []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// TODO: use PSS or PKCS?
-	return rsa.SignPKCS1v15(
+	return rsa.SignPSS(
 		rand.Reader,
 		signer.keyPair.Private,
 		hashFunction,
 		digest,
+		nil,
 	)
 }
 
