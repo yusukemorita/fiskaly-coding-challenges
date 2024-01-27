@@ -19,6 +19,7 @@ func NewSignatureService(repository domain.SignatureDeviceRepository) SignatureS
 	}
 }
 
+// TODO: REST endpoints ...
 type CreateSignatureDeviceResponse struct {
 	ID string `json:"signatureDeviceId"`
 }
