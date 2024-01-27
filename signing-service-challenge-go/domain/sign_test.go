@@ -3,7 +3,7 @@ package domain_test
 import (
 	stdCrypto "crypto"
 	"crypto/rsa"
-	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/base64"
 	"fmt"
 	"testing"
@@ -45,7 +45,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 
 		// verify the decoded signature with the public key
-		hash := sha256.New()
+		hash := sha512.New384()
 		_, err = hash.Write([]byte(signedData))
 		if err != nil {
 			t.Fatal(err)
@@ -58,7 +58,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 		err = rsa.VerifyPSS(
 			keyPair.Public,
-			stdCrypto.SHA256,
+			stdCrypto.SHA384,
 			digest,
 			decodedSignature,
 			nil,

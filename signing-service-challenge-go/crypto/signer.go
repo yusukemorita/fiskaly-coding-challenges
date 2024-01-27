@@ -6,8 +6,12 @@ import (
 	"crypto/rsa"
 )
 
-// TODO: is this a good hash to use?
-const hashFunction = stdCrypto.SHA256
+// At the current RSA key size (512 bits), SHA512 causes a
+// `message too long for RSA key size` error from `rsa.SignPSS`
+// ref: https://github.com/golang/go/blob/d7df7f4fa01f1b445d835fc908c54448a63c68fb/src/crypto/rsa/pss.go#L304-L308
+// Therefore use the next biggest hash function, as a bigger hash
+// makes collisions less likely.
+const hashFunction = stdCrypto.SHA384
 
 // Signer defines a contract for different types of signing implementations.
 type Signer interface {
