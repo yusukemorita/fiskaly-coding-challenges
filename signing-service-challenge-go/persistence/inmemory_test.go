@@ -133,12 +133,12 @@ func TestUpdate(t *testing.T) {
 		repository.devices[device.ID] = device
 
 		updatedDevice := domain.SignatureDevice{
-			ID:                id,
-			Algorithm:         crypto.RSAAlgorithm{},
-			EncodedPrivateKey: []byte("SOME_RSA_KEY"),
-			Label:             "my rsa key",
-			SignatureCounter:  1,
-			LastSignature:     "last-signature",
+			ID:                         id,
+			Algorithm:                  crypto.RSAAlgorithm{},
+			EncodedPrivateKey:          []byte("SOME_RSA_KEY"),
+			Label:                      "my rsa key",
+			SignatureCounter:           1,
+			Base64EncodedLastSignature: "last-signature",
 		}
 
 		err := repository.Update(updatedDevice)
@@ -150,7 +150,7 @@ func TestUpdate(t *testing.T) {
 		if !ok {
 			t.Error("device not found")
 		}
-		if got.SignatureCounter != updatedDevice.SignatureCounter || got.LastSignature != updatedDevice.LastSignature {
+		if got.SignatureCounter != updatedDevice.SignatureCounter || got.Base64EncodedLastSignature != updatedDevice.Base64EncodedLastSignature {
 			t.Error("device not updated correctly")
 		}
 	})

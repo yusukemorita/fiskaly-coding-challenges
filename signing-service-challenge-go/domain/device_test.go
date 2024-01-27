@@ -23,18 +23,18 @@ func (device MockSignatureAlgorithm) SignTransaction(encodedPrivateKey []byte, d
 	return nil, nil
 }
 
-func TestExtendDataToBeSigned(t *testing.T) {
+func TestSignatureDevice_SecureDataToBeSigned(t *testing.T) {
 	t.Run("concatenates data with counter and last signature when counter > 0", func(t *testing.T) {
 		lastSignature := "last-signature"
 		base64EncodedLastSignature := "bGFzdC1zaWduYXR1cmU="
 
 		device := SignatureDevice{
-			LastSignature:    lastSignature,
-			SignatureCounter: 1,
+			Base64EncodedLastSignature: lastSignature,
+			SignatureCounter:           1,
 		}
 		data := "some transaction data"
 
-		got := device.ExtendDataToBeSigned(data)
+		got := device.SecureDataToBeSigned(data)
 		expected := fmt.Sprintf("1_%s_%s", data, base64EncodedLastSignature)
 
 		if got != expected {
@@ -47,13 +47,13 @@ func TestExtendDataToBeSigned(t *testing.T) {
 		base64EncodedID := "ZWQ0MDU5N2MtNTJiNy00MGJjLTllMTUtODNlNDc0MWExMDJi"
 
 		device := SignatureDevice{
-			ID:               id,
-			LastSignature:    "",
-			SignatureCounter: 0,
+			ID:                         id,
+			Base64EncodedLastSignature: "",
+			SignatureCounter:           0,
 		}
 		data := "some transaction data"
 
-		got := device.ExtendDataToBeSigned(data)
+		got := device.SecureDataToBeSigned(data)
 		expected := fmt.Sprintf("0_%s_%s", data, base64EncodedID)
 
 		if got != expected {
@@ -84,12 +84,12 @@ func TestBuildSignatureDevice(t *testing.T) {
 			t.Errorf("expected initial signature counter value to be 0, got: %d", device.SignatureCounter)
 		}
 
-		if device.LastSignature != "" {
-			t.Errorf("expected initial last signature value to be blank, got: %s", device.LastSignature)
+		if device.Base64EncodedLastSignature != "" {
+			t.Errorf("expected initial last signature value to be blank, got: %s", device.Base64EncodedLastSignature)
 		}
 
 		if string(device.EncodedPrivateKey) != string(algorithm.encodedPrivateKey) {
-			t.Errorf("expected encoded private key: %s, got: %s", algorithm.encodedPrivateKey, device.LastSignature)
+			t.Errorf("expected encoded private key: %s, got: %s", algorithm.encodedPrivateKey, device.Base64EncodedLastSignature)
 		}
 
 		if device.Label != "" {

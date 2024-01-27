@@ -27,7 +27,7 @@ type SignatureDevice struct {
 	// (optional) user provided string to be displayed in the UI
 	Label string
 	// track the last signature created with this device
-	LastSignature string
+	Base64EncodedLastSignature string
 	// track how many signatures have been created with this device
 	SignatureCounter uint
 }
@@ -39,58 +39,24 @@ func (device SignatureDevice) SignTransaction(dataToBeSigned string) ([]byte, er
 	)
 }
 
-func (device SignatureDevice) ExtendDataToBeSigned(data string) string {
+func (device SignatureDevice) SecureDataToBeSigned(data string) string {
+	components := []string{
+		strconv.Itoa(int(device.SignatureCounter)),
+		data,
+	}
+
 	if device.SignatureCounter == 0 {
 		// when the device has not yet been used, the `lastSignature` is blank,
 		// so use the device ID instead
 		encodedID := base64.StdEncoding.EncodeToString([]byte(device.ID.String()))
-
-		return strings.Join(
-			[]string{
-				strconv.Itoa(int(device.SignatureCounter)),
-				data,
-				encodedID,
-			},
-			"_",
-		)
+		components = append(components, encodedID)
+	} else {
+		encodedLastSignature := base64.StdEncoding.EncodeToString([]byte(device.Base64EncodedLastSignature))
+		components = append(components, encodedLastSignature)
 	}
 
-	encodedLastSignature := base64.StdEncoding.EncodeToString([]byte(device.LastSignature))
-
-	// The resulting string (secured_data_to_be_signed) should follow this format:
-	// <signature_counter>_<data_to_be_signed>_<last_signature_base64_encoded>
-	return strings.Join(
-		[]string{
-			strconv.Itoa(int(device.SignatureCounter)),
-			data,
-			encodedLastSignature,
-		},
-		"_",
-	)
+	return strings.Join(components, "_")
 }
-
-// func SignTransaction(
-// 	device SignatureDevice,
-// 	deviceRepository SignatureDeviceRepository,
-// 	dataToBeSigned string,
-// ) (
-// 	signature string,
-// 	signedData string,
-// 	err error,
-// ) {
-
-// 	sig, err := device.SignTransaction(securedDataToBeSigned)
-// 	if err != nil {
-// 		// TODO: better error handling?
-// 		return "", "", errors.New("failed to sign transaction")
-// 	}
-
-// 	// TODO: base64 encode signature
-// 	// TODO: update counter and last signature
-// 	// TODO: update
-
-// 	return signature, "", nil
-// }
 
 func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...string) (SignatureDevice, error) {
 	encodedPrivateKey, err := algorithm.GenerateEncodedPrivateKey()
