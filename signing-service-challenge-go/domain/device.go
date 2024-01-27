@@ -27,7 +27,7 @@ type SignatureDevice struct {
 	SignatureCounter uint
 }
 
-func (device SignatureDevice) SignTransaction(dataToBeSigned string) ([]byte, error) {
+func (device SignatureDevice) Sign(dataToBeSigned string) ([]byte, error) {
 	return device.KeyPair.Sign([]byte(dataToBeSigned))
 }
 
