@@ -1,6 +1,7 @@
 package crypto
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
@@ -10,6 +11,27 @@ import (
 type RSAKeyPair struct {
 	Public  *rsa.PublicKey
 	Private *rsa.PrivateKey
+}
+
+func (keyPair RSAKeyPair) EncodedPrivateKey() ([]byte, error) {
+	marshaler := RSAMarshaler{}
+	_, private, err := marshaler.Marshal(keyPair)
+	return private, err
+}
+
+func (keyPair RSAKeyPair) SignTransaction(dataToBeSigned []byte) (signature []byte, err error) {
+	digest, err := computeDigestWithHashFunction(dataToBeSigned)
+	if err != nil {
+		return nil, err
+	}
+
+	return rsa.SignPSS(
+		rand.Reader,
+		keyPair.Private,
+		hashFunction,
+		digest,
+		nil,
+	)
 }
 
 // RSAMarshaler can encode and decode an RSA key pair.
@@ -61,31 +83,4 @@ type RSAAlgorithm struct{}
 
 func (rsa RSAAlgorithm) Name() string {
 	return "RSA"
-}
-
-func (rsa RSAAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
-	generator := RSAGenerator{}
-	keyPair, err := generator.Generate()
-	if err != nil {
-		return nil, err
-	}
-
-	marshaller := NewRSAMarshaler()
-	_, privateKey, err := marshaller.Marshal(*keyPair)
-	if err != nil {
-		return nil, err
-	}
-
-	return privateKey, nil
-}
-
-func (rsa RSAAlgorithm) SignTransaction(encodedPrivateKey []byte, dataToBeSigned []byte) ([]byte, error) {
-	marshaller := NewRSAMarshaler()
-	keyPair, err := marshaller.Unmarshal(encodedPrivateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	signer := RSASigner{keyPair: *keyPair}
-	return signer.Sign(dataToBeSigned)
 }

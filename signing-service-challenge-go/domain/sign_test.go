@@ -19,7 +19,7 @@ func TestSignTransaction(t *testing.T) {
 		dataToBeSigned := "some-transaction-data"
 		repository := persistence.NewInMemorySignatureDeviceRepository()
 		deviceId := uuid.MustParse("121fe402-762a-411a-8eeb-9e6c3ca16886")
-		device, err := domain.BuildSignatureDevice(deviceId, crypto.RSAAlgorithm{})
+		device, err := domain.BuildSignatureDevice(deviceId, crypto.RSAGenerator{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -52,7 +52,11 @@ func TestSignTransaction(t *testing.T) {
 		}
 		digest := hash.Sum(nil)
 
-		keyPair, err := crypto.RSAMarshaler{}.Unmarshal(device.EncodedPrivateKey)
+		encodedPrivateKey, err := device.KeyPair.EncodedPrivateKey()
+		if err != nil {
+			t.Fatal(err)
+		}
+		keyPair, err := crypto.RSAMarshaler{}.Unmarshal(encodedPrivateKey)
 		if err != nil {
 			t.Fatal(err)
 		}

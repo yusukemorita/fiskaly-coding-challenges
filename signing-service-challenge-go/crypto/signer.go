@@ -2,8 +2,6 @@ package crypto
 
 import (
 	stdCrypto "crypto"
-	"crypto/rand"
-	"crypto/rsa"
 )
 
 // At the current RSA key size (512 bits), SHA512 causes a
@@ -16,38 +14,6 @@ const hashFunction = stdCrypto.SHA384
 // Signer defines a contract for different types of signing implementations.
 type Signer interface {
 	Sign(dataToBeSigned []byte) ([]byte, error)
-}
-
-type RSASigner struct {
-	keyPair RSAKeyPair
-}
-
-func (signer RSASigner) Sign(dataToBeSigned []byte) ([]byte, error) {
-	digest, err := computeDigestWithHashFunction(dataToBeSigned)
-	if err != nil {
-		return nil, err
-	}
-
-	return rsa.SignPSS(
-		rand.Reader,
-		signer.keyPair.Private,
-		hashFunction,
-		digest,
-		nil,
-	)
-}
-
-type ECCSigner struct {
-	keyPair ECCKeyPair
-}
-
-func (signer ECCSigner) Sign(dataToBeSigned []byte) ([]byte, error) {
-	digest, err := computeDigestWithHashFunction(dataToBeSigned)
-	if err != nil {
-		return nil, err
-	}
-
-	return signer.keyPair.Private.Sign(rand.Reader, digest, nil)
 }
 
 func computeDigestWithHashFunction(b []byte) ([]byte, error) {

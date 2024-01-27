@@ -7,20 +7,19 @@ import (
 	"github.com/google/uuid"
 )
 
-// Defines the algorithm related functions that `domain` package requires.
-// These operations will be implemented by algorithm specific structs in the
-// `crypto` package.
-// e.g. `RSAAlgorithm`, `ECCAlgorithm`
-type SignatureAlgorithm interface {
-	Name() string
-	GenerateEncodedPrivateKey() ([]byte, error)
-	SignTransaction(encodedPrivateKey []byte, dataToBeSigned []byte) (signature []byte, err error)
+type KeyPair interface {
+	SignTransaction(dataToBeSigned []byte) (signature []byte, err error)
+	EncodedPrivateKey() ([]byte, error)
+}
+
+type KeyPairGenerator interface {
+	AlgorithmName() string
+	Generate() (KeyPair, error)
 }
 
 type SignatureDevice struct {
-	ID                uuid.UUID
-	Algorithm         SignatureAlgorithm
-	EncodedPrivateKey []byte
+	ID      uuid.UUID
+	KeyPair KeyPair
 	// (optional) user provided string to be displayed in the UI
 	Label string
 	// track the last signature created with this device
@@ -30,23 +29,19 @@ type SignatureDevice struct {
 }
 
 func (device SignatureDevice) SignTransaction(dataToBeSigned string) ([]byte, error) {
-	return device.Algorithm.SignTransaction(
-		device.EncodedPrivateKey,
-		[]byte(dataToBeSigned),
-	)
+	return device.KeyPair.SignTransaction([]byte(dataToBeSigned))
 }
 
-func BuildSignatureDevice(id uuid.UUID, algorithm SignatureAlgorithm, label ...string) (SignatureDevice, error) {
-	encodedPrivateKey, err := algorithm.GenerateEncodedPrivateKey()
+func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...string) (SignatureDevice, error) {
+	keyPair, err := generator.Generate()
 	if err != nil {
-		err = errors.New(fmt.Sprintf("private key generation failed: %s", err.Error()))
+		err = errors.New(fmt.Sprintf("key pair generation failed: %s", err.Error()))
 		return SignatureDevice{}, err
 	}
 
 	device := SignatureDevice{
 		ID:                id,
-		Algorithm:         algorithm,
-		EncodedPrivateKey: encodedPrivateKey,
+		KeyPair:           keyPair,
 	}
 
 	if len(label) > 0 {
