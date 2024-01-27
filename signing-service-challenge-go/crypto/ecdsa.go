@@ -13,13 +13,7 @@ type ECCKeyPair struct {
 	Private *ecdsa.PrivateKey
 }
 
-func (keyPair ECCKeyPair) EncodedPrivateKey() ([]byte, error) {
-	marshaler := ECCMarshaler{}
-	_, private, err := marshaler.Encode(keyPair)
-	return private, err
-}
-
-func (keyPair ECCKeyPair) SignTransaction(dataToBeSigned []byte) ([]byte, error) {
+func (keyPair ECCKeyPair) Sign(dataToBeSigned []byte) ([]byte, error) {
 	digest, err := computeDigestWithHashFunction(dataToBeSigned)
 	if err != nil {
 		return nil, err

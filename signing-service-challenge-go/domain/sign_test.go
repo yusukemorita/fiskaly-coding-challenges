@@ -52,16 +52,9 @@ func TestSignTransaction(t *testing.T) {
 		}
 		digest := hash.Sum(nil)
 
-		encodedPrivateKey, err := device.KeyPair.EncodedPrivateKey()
-		if err != nil {
-			t.Fatal(err)
-		}
-		keyPair, err := crypto.RSAMarshaler{}.Unmarshal(encodedPrivateKey)
-		if err != nil {
-			t.Fatal(err)
-		}
+		rsaKeyPair := device.KeyPair.(*crypto.RSAKeyPair)
 		err = rsa.VerifyPSS(
-			keyPair.Public,
+			rsaKeyPair.Public,
 			stdCrypto.SHA384,
 			digest,
 			decodedSignature,

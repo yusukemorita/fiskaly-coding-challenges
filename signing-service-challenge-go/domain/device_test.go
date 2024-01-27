@@ -8,11 +8,7 @@ import (
 
 type MockKeyPair struct{}
 
-func (keyPair MockKeyPair) SignTransaction(dataToBeSigned []byte) (signature []byte, err error) {
-	return nil, nil
-}
-
-func (keyPair MockKeyPair) EncodedPrivateKey() ([]byte, error) {
+func (keyPair MockKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err error) {
 	return nil, nil
 }
 

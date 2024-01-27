@@ -188,14 +188,9 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		if device.Label != "" {
 			t.Errorf("label not persisted correctly. expected blank string, got: %s", device.Label)
 		}
-
-		encodedPrivateKey, err := device.KeyPair.EncodedPrivateKey()
-		if err != nil {
-			t.Fatal(err)
-		}
-		_, err = crypto.NewRSAMarshaler().Unmarshal(encodedPrivateKey)
-		if err != nil {
-			t.Errorf("decode of generated private key failed: %s", err)
+		_, ok := device.KeyPair.(*crypto.RSAKeyPair)
+		if !ok {
+			t.Errorf("key pair generation failed: %s", err)
 		}
 	})
 
@@ -250,13 +245,9 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		if device.Label != label {
 			t.Errorf("label not persisted correctly. expected: %s, got: %s", label, device.Label)
 		}
-		encodedPrivateKey, err := device.KeyPair.EncodedPrivateKey()
-		if err != nil {
-			t.Fatal(err)
-		}
-		_, err = crypto.NewRSAMarshaler().Unmarshal(encodedPrivateKey)
-		if err != nil {
-			t.Errorf("decode of generated private key failed: %s", err)
+		_, ok := device.KeyPair.(*crypto.RSAKeyPair)
+		if !ok {
+			t.Errorf("key pair generation failed: %s", err)
 		}
 	})
 }

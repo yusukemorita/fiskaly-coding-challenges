@@ -8,8 +8,7 @@ import (
 )
 
 type KeyPair interface {
-	SignTransaction(dataToBeSigned []byte) (signature []byte, err error)
-	EncodedPrivateKey() ([]byte, error)
+	Sign(dataToBeSigned []byte) (signature []byte, err error)
 }
 
 type KeyPairGenerator interface {
@@ -29,7 +28,7 @@ type SignatureDevice struct {
 }
 
 func (device SignatureDevice) SignTransaction(dataToBeSigned string) ([]byte, error) {
-	return device.KeyPair.SignTransaction([]byte(dataToBeSigned))
+	return device.KeyPair.Sign([]byte(dataToBeSigned))
 }
 
 func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...string) (SignatureDevice, error) {
@@ -40,8 +39,8 @@ func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...str
 	}
 
 	device := SignatureDevice{
-		ID:                id,
-		KeyPair:           keyPair,
+		ID:      id,
+		KeyPair: keyPair,
 	}
 
 	if len(label) > 0 {

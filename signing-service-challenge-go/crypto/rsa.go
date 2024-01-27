@@ -13,13 +13,7 @@ type RSAKeyPair struct {
 	Private *rsa.PrivateKey
 }
 
-func (keyPair RSAKeyPair) EncodedPrivateKey() ([]byte, error) {
-	marshaler := RSAMarshaler{}
-	_, private, err := marshaler.Marshal(keyPair)
-	return private, err
-}
-
-func (keyPair RSAKeyPair) SignTransaction(dataToBeSigned []byte) (signature []byte, err error) {
+func (keyPair RSAKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err error) {
 	digest, err := computeDigestWithHashFunction(dataToBeSigned)
 	if err != nil {
 		return nil, err
