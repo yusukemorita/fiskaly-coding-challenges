@@ -68,13 +68,3 @@ func (m RSAMarshaler) Unmarshal(privateKeyBytes []byte) (*RSAKeyPair, error) {
 		Public:  &privateKey.PublicKey,
 	}, nil
 }
-
-// Implements domain.SignatureAlgorithm for RSA.
-// Note that any actual logic is implemented in `RSASigner`, `RSAMarshaller` and `RSAGenerator`,
-// and this struct merely acts as a facade to make this logic easier to access in the
-// `domain` package.
-type RSAAlgorithm struct{}
-
-func (rsa RSAAlgorithm) Name() string {
-	return "RSA"
-}
