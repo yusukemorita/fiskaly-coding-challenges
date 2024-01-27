@@ -86,7 +86,7 @@ func (ecc ECCAlgorithm) GenerateEncodedPrivateKey() ([]byte, error) {
 	return privateKey, nil
 }
 
-func (rsa ECCAlgorithm) SignTransaction(encodedPrivateKey []byte, dataToBeSigned []byte) ([]byte, error) {
+func (ecc ECCAlgorithm) SignTransaction(encodedPrivateKey []byte, dataToBeSigned []byte) ([]byte, error) {
 	marshaller := NewECCMarshaler()
 	keyPair, err := marshaller.Decode(encodedPrivateKey)
 	if err != nil {
