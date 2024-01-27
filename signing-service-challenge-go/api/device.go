@@ -95,8 +95,8 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 }
 
 type SignTransactionRequest struct {
-	DeviceId string `json:"signature_device_id"`
-	Data     string `json:"data"`
+	DeviceId       string `json:"signature_device_id"`
+	DataToBeSigned string `json:"data_to_be_signed"`
 }
 
 type SignTransactionResponse struct {
@@ -144,7 +144,7 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 	signature, signedData, err := domain.SignTransaction(
 		device,
 		s.signatureDeviceRepository,
-		requestBody.Data,
+		requestBody.DataToBeSigned,
 	)
 	if err != nil {
 		// TODO: better error handling?
