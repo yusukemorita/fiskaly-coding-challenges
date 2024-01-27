@@ -17,7 +17,6 @@ type RSASigner struct {
 	keyPair RSAKeyPair
 }
 
-// TODO: test this and ECCSigner.Sign
 func (signer RSASigner) Sign(dataToBeSigned []byte) ([]byte, error) {
 	sha256 := stdCrypto.SHA256 // TODO: is this a good hash to use?
 
@@ -36,18 +35,13 @@ func (signer RSASigner) Sign(dataToBeSigned []byte) ([]byte, error) {
 		sha256,
 		digest,
 	)
-
-	// return signer.keyPair.Private.Sign(
-	// 	rand.Reader,
-	// 	digest,
-	// 	sha256,
-	// )
 }
 
 type ECCSigner struct {
 	keyPair ECCKeyPair
 }
 
+// TODO: test 
 func (signer ECCSigner) Sign(dataToBeSigned []byte) ([]byte, error) {
 	return signer.keyPair.Private.Sign(rand.Reader, dataToBeSigned, nil)
 }
