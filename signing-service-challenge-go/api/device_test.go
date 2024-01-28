@@ -240,3 +240,37 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		}
 	})
 }
+
+func TestSignTransaction(t *testing.T) {
+	t.Run("", func(t *testing.T) {
+		id := uuid.NewString()
+
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		signatureService := api.NewSignatureService(repository)
+		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
+		defer testServer.Close()
+
+		response := sendJsonRequest(
+			t,
+			http.MethodPost,
+			fmt.Sprintf("%s/api/v0/signature_devices/%s/signatures", testServer.URL, id),
+			api.SignTransactionRequest{Data: ""},
+		)
+
+		// check status code
+		expectedStatusCode := http.StatusOK
+		if response.StatusCode != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
+		}
+
+		// check body
+		body := readBody(t, response)
+		expectedBody := fmt.Sprintf(`{
+  "data": "%s"
+}`, id)
+		diff := cmp.Diff(body, expectedBody)
+		if diff != "" {
+			t.Errorf("unexpected diff: %s", diff)
+		}
+	})
+}
