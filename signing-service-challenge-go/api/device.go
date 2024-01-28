@@ -20,7 +20,6 @@ func NewSignatureService(repository domain.SignatureDeviceRepository) SignatureS
 	}
 }
 
-// TODO: REST endpoints ...
 type CreateSignatureDeviceResponse struct {
 	ID string `json:"signatureDeviceId"`
 }
@@ -135,8 +134,8 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 		requestBody.Data,
 	)
 	if err != nil {
-		// TODO: better error handling?
 		WriteInternalError(response)
+		return
 	}
 
 	WriteAPIResponse(
