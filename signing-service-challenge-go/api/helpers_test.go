@@ -41,6 +41,8 @@ func sendJsonRequest(
 }
 
 func readBody(t *testing.T, response *http.Response) string {
+	t.Helper()
+
 	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		t.Fatal(err)
