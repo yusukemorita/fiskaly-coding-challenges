@@ -1,6 +1,9 @@
 package api_test
 
 import (
+	"crypto/rsa"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -242,7 +245,7 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 }
 
 func TestSignTransaction(t *testing.T) {
-	t.Run("", func(t *testing.T) {
+	t.Run("returns not found when device with id does not exist", func(t *testing.T) {
 		id := uuid.NewString()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
@@ -254,7 +257,47 @@ func TestSignTransaction(t *testing.T) {
 			t,
 			http.MethodPost,
 			fmt.Sprintf("%s/api/v0/signature_devices/%s/signatures", testServer.URL, id),
-			api.SignTransactionRequest{Data: ""},
+			api.SignTransactionRequest{Data: "some-data"},
+		)
+
+		// check status code
+		expectedStatusCode := http.StatusNotFound
+		if response.StatusCode != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
+		}
+
+		// check body
+		body := readBody(t, response)
+		expectedBody := `{"errors":["signature device not found"]}`
+		diff := cmp.Diff(body, expectedBody)
+		if diff != "" {
+			t.Errorf("unexpected diff: %s", diff)
+		}
+	})
+
+	t.Run("successfully signs data when device with id exists", func(t *testing.T) {
+		id := uuid.New()
+		dataToSign := "some-data"
+		device, err := domain.BuildSignatureDevice(id, crypto.RSAGenerator{})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		err = repository.Create(device)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		signatureService := api.NewSignatureService(repository)
+		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
+		defer testServer.Close()
+
+		response := sendJsonRequest(
+			t,
+			http.MethodPost,
+			fmt.Sprintf("%s/api/v0/signature_devices/%s/signatures", testServer.URL, id),
+			api.SignTransactionRequest{Data: dataToSign},
 		)
 
 		// check status code
@@ -265,12 +308,28 @@ func TestSignTransaction(t *testing.T) {
 
 		// check body
 		body := readBody(t, response)
-		expectedBody := fmt.Sprintf(`{
-  "data": "%s"
-}`, id)
-		diff := cmp.Diff(body, expectedBody)
-		if diff != "" {
-			t.Errorf("unexpected diff: %s", diff)
+		jsonBody := struct {
+			Data api.SignTransactionResponse `json:"data"`
+		}{}
+		err = json.Unmarshal([]byte(body), &jsonBody)
+		if err != nil {
+			t.Errorf("unexpected response body format: %s", err)
+		}
+
+		// verify signature and signed data
+		keyPair := device.KeyPair.(*crypto.RSAKeyPair)
+		digest, err := crypto.ComputeHashDigest([]byte(jsonBody.Data.SignedData))
+		if err != nil {
+			t.Fatal(err)
+		}
+		decodedSignature, err := base64.StdEncoding.DecodeString(jsonBody.Data.Signature)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		err = rsa.VerifyPSS(keyPair.Public, crypto.HashFunction, digest, decodedSignature, nil)
+		if err != nil {
+			t.Errorf("verification of signed data and signature failed. err: %s, signed data: %s, signature: %s", err, jsonBody.Data.SignedData, jsonBody.Data.Signature)
 		}
 	})
 }
