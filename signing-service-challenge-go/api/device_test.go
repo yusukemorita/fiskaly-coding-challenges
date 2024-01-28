@@ -275,7 +275,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 	})
 
-	t.Run("successfully signs data when device with id exists", func(t *testing.T) {
+	t.Run("successfully signs data with device(counter = 0)", func(t *testing.T) {
 		id := "64ff796e-fcde-499a-a03d-82dd1f89e8e5"
 		base64EncodedId := "NjRmZjc5NmUtZmNkZS00OTlhLWEwM2QtODJkZDFmODllOGU1"
 		dataToSign := "some-data"
@@ -307,7 +307,7 @@ func TestSignTransaction(t *testing.T) {
 			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
 		}
 
-		// check body
+		// unmarshal body
 		body := readBody(t, response)
 		jsonBody := struct {
 			Data api.SignTransactionResponse `json:"data"`
@@ -348,6 +348,87 @@ func TestSignTransaction(t *testing.T) {
 		}
 		if device.SignatureCounter != 1 {
 			t.Errorf("device signature counter should be incremented to 1, got: %d", device.SignatureCounter)
+		}
+		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
+			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
+		}
+	})
+
+	t.Run("successfully signs data with device(counter > 0)", func(t *testing.T) {
+		id := "64ff796e-fcde-499a-a03d-82dd1f89e8e5"
+		dataToSign := "some-data"
+
+		// create a device that has been used once
+		device, err := domain.BuildSignatureDevice(uuid.MustParse(id), crypto.RSAGenerator{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		device.SignatureCounter = 1
+		device.Base64EncodedLastSignature = "last-signature-base-64-encoded"
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		err = repository.Create(device)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		signatureService := api.NewSignatureService(repository)
+		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
+		defer testServer.Close()
+
+		response := sendJsonRequest(
+			t,
+			http.MethodPost,
+			fmt.Sprintf("%s/api/v0/signature_devices/%s/signatures", testServer.URL, id),
+			api.SignTransactionRequest{Data: dataToSign},
+		)
+
+		// check status code
+		expectedStatusCode := http.StatusOK
+		if response.StatusCode != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
+		}
+
+		// unmarshal body
+		body := readBody(t, response)
+		jsonBody := struct {
+			Data api.SignTransactionResponse `json:"data"`
+		}{}
+		err = json.Unmarshal([]byte(body), &jsonBody)
+		if err != nil {
+			t.Errorf("unexpected response body format: %s", err)
+		}
+
+		// check signature is verifiable
+		keyPair := device.KeyPair.(*crypto.RSAKeyPair)
+		digest, err := crypto.ComputeHashDigest([]byte(jsonBody.Data.SignedData))
+		if err != nil {
+			t.Fatal(err)
+		}
+		decodedSignature, err := base64.StdEncoding.DecodeString(jsonBody.Data.Signature)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = rsa.VerifyPSS(keyPair.Public, crypto.HashFunction, digest, decodedSignature, nil)
+		if err != nil {
+			t.Errorf("verification of signed data and signature failed. err: %s, signed data: %s, signature: %s", err, jsonBody.Data.SignedData, jsonBody.Data.Signature)
+		}
+
+		// check signed_data is correct format
+		expectedSignedData := fmt.Sprintf("1_%s_%s", dataToSign, device.Base64EncodedLastSignature)
+		if jsonBody.Data.SignedData != expectedSignedData {
+			t.Errorf("expected signed data: %s, got: %s", expectedSignedData, jsonBody.Data.SignedData)
+		}
+
+		// check persisted data
+		device, ok, err := repository.Find(uuid.MustParse(id))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !ok {
+			t.Fatal("device not found")
+		}
+		if device.SignatureCounter != 2 {
+			t.Errorf("device signature counter should be incremented to 2, got: %d", device.SignatureCounter)
 		}
 		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
 			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
