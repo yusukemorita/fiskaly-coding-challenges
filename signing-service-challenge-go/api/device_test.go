@@ -276,9 +276,10 @@ func TestSignTransaction(t *testing.T) {
 	})
 
 	t.Run("successfully signs data when device with id exists", func(t *testing.T) {
-		id := uuid.New()
+		id := "64ff796e-fcde-499a-a03d-82dd1f89e8e5"
+		base64EncodedId := "NjRmZjc5NmUtZmNkZS00OTlhLWEwM2QtODJkZDFmODllOGU1"
 		dataToSign := "some-data"
-		device, err := domain.BuildSignatureDevice(id, crypto.RSAGenerator{})
+		device, err := domain.BuildSignatureDevice(uuid.MustParse(id), crypto.RSAGenerator{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -316,7 +317,7 @@ func TestSignTransaction(t *testing.T) {
 			t.Errorf("unexpected response body format: %s", err)
 		}
 
-		// verify signature and signed data
+		// check signature is verifiable
 		keyPair := device.KeyPair.(*crypto.RSAKeyPair)
 		digest, err := crypto.ComputeHashDigest([]byte(jsonBody.Data.SignedData))
 		if err != nil {
@@ -326,10 +327,30 @@ func TestSignTransaction(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
 		err = rsa.VerifyPSS(keyPair.Public, crypto.HashFunction, digest, decodedSignature, nil)
 		if err != nil {
 			t.Errorf("verification of signed data and signature failed. err: %s, signed data: %s, signature: %s", err, jsonBody.Data.SignedData, jsonBody.Data.Signature)
+		}
+
+		// check signed_data is correct format
+		expectedSignedData := fmt.Sprintf("0_%s_%s", dataToSign, base64EncodedId)
+		if jsonBody.Data.SignedData != expectedSignedData {
+			t.Errorf("expected signed data: %s, got: %s", expectedSignedData, jsonBody.Data.SignedData)
+		}
+
+		// check persisted data
+		device, ok, err := repository.Find(uuid.MustParse(id))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !ok {
+			t.Fatal("device not found")
+		}
+		if device.SignatureCounter != 1 {
+			t.Errorf("device signature counter should be incremented to 1, got: %d", device.SignatureCounter)
+		}
+		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
+			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
 		}
 	})
 }
