@@ -1,7 +1,7 @@
 package domain_test
 
 import (
-	stdCrypto "crypto"
+	stdcrypto "crypto"
 	"crypto/rsa"
 	"crypto/sha512"
 	"encoding/base64"
@@ -55,7 +55,7 @@ func TestSignTransaction(t *testing.T) {
 		rsaKeyPair := device.KeyPair.(*crypto.RSAKeyPair)
 		err = rsa.VerifyPSS(
 			rsaKeyPair.Public,
-			stdCrypto.SHA384,
+			stdcrypto.SHA384,
 			digest,
 			decodedSignature,
 			nil,
