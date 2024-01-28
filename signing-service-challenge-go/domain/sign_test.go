@@ -1,7 +1,6 @@
 package domain_test
 
 import (
-	stdcrypto "crypto"
 	"crypto/rsa"
 	"crypto/sha512"
 	"encoding/base64"
