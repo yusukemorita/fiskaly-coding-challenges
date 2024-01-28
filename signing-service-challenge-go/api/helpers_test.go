@@ -28,7 +28,7 @@ func sendJsonRequest(
 
 	request, err := http.NewRequest(httpMethod, url, bodyReader)
 	if err != nil {
-		panic(fmt.Sprintf("json.Marshal failed: err"))
+		t.Fatal(fmt.Sprintf("json.Marshal failed: err"))
 	}
 	request.Header.Set("Content-Type", "application/json")
 
