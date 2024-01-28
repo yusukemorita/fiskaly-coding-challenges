@@ -14,7 +14,7 @@ type ECCKeyPair struct {
 }
 
 func (keyPair ECCKeyPair) Sign(dataToBeSigned []byte) ([]byte, error) {
-	digest, err := computeDigestWithHashFunction(dataToBeSigned)
+	digest, err := computeHashDigest(dataToBeSigned)
 	if err != nil {
 		return nil, err
 	}

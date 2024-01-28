@@ -55,7 +55,7 @@ func TestSignTransaction(t *testing.T) {
 		rsaKeyPair := device.KeyPair.(*crypto.RSAKeyPair)
 		err = rsa.VerifyPSS(
 			rsaKeyPair.Public,
-			stdcrypto.SHA384,
+			crypto.HashFunction,
 			digest,
 			decodedSignature,
 			nil,

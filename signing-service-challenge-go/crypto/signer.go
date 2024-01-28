@@ -9,10 +9,10 @@ import (
 // ref: https://github.com/golang/go/blob/d7df7f4fa01f1b445d835fc908c54448a63c68fb/src/crypto/rsa/pss.go#L304-L308
 // Therefore use the next biggest hash function, as a bigger hash
 // makes collisions less likely.
-const hashFunction = stdcrypto.SHA384
+const HashFunction = stdcrypto.SHA384
 
-func computeDigestWithHashFunction(b []byte) ([]byte, error) {
-	hash := hashFunction.New()
+func computeHashDigest(b []byte) ([]byte, error) {
+	hash := HashFunction.New()
 	_, err := hash.Write(b)
 	if err != nil {
 		return nil, err

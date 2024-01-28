@@ -18,12 +18,12 @@ func TestRSASigner_Sign(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	digest, err := computeDigestWithHashFunction([]byte(dataToBeSigned))
+	digest, err := computeHashDigest([]byte(dataToBeSigned))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = rsa.VerifyPSS(keyPair.Public, hashFunction, digest, signature, nil)
+	err = rsa.VerifyPSS(keyPair.Public, HashFunction, digest, signature, nil)
 	if err != nil {
 		t.Errorf("signature verification failed: %s", err)
 	}

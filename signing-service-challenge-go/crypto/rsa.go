@@ -14,7 +14,7 @@ type RSAKeyPair struct {
 }
 
 func (keyPair RSAKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err error) {
-	digest, err := computeDigestWithHashFunction(dataToBeSigned)
+	digest, err := computeHashDigest(dataToBeSigned)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (keyPair RSAKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err err
 	return rsa.SignPSS(
 		rand.Reader,
 		keyPair.Private,
-		hashFunction,
+		HashFunction,
 		digest,
 		nil,
 	)
