@@ -278,7 +278,7 @@ func TestSignTransaction(t *testing.T) {
 
 	t.Run("successfully signs data with device (algorithm: RSA, counter = 0)", func(t *testing.T) {
 		id := "64ff796e-fcde-499a-a03d-82dd1f89e8e5"
-		base64EncodedId := "NjRmZjc5NmUtZmNkZS00OTlhLWEwM2QtODJkZDFmODllOGU1"
+		base64EncodedID := "NjRmZjc5NmUtZmNkZS00OTlhLWEwM2QtODJkZDFmODllOGU1"
 		dataToSign := "some-data"
 		device, err := domain.BuildSignatureDevice(uuid.MustParse(id), crypto.RSAGenerator{})
 		if err != nil {
@@ -334,7 +334,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 
 		// check signed_data is correct format
-		expectedSignedData := fmt.Sprintf("0_%s_%s", dataToSign, base64EncodedId)
+		expectedSignedData := fmt.Sprintf("0_%s_%s", dataToSign, base64EncodedID)
 		if jsonBody.Data.SignedData != expectedSignedData {
 			t.Errorf("expected signed data: %s, got: %s", expectedSignedData, jsonBody.Data.SignedData)
 		}
@@ -438,7 +438,7 @@ func TestSignTransaction(t *testing.T) {
 
 	t.Run("successfully signs data with device (algorithm: ECC, counter = 0)", func(t *testing.T) {
 		id := "64ff796e-fcde-499a-a03d-82dd1f89e8e5"
-		base64EncodedId := "NjRmZjc5NmUtZmNkZS00OTlhLWEwM2QtODJkZDFmODllOGU1"
+		base64EncodedID := "NjRmZjc5NmUtZmNkZS00OTlhLWEwM2QtODJkZDFmODllOGU1"
 		dataToSign := "some-data"
 		device, err := domain.BuildSignatureDevice(uuid.MustParse(id), crypto.ECCGenerator{})
 		if err != nil {
@@ -494,7 +494,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 
 		// check signed_data is correct format
-		expectedSignedData := fmt.Sprintf("0_%s_%s", dataToSign, base64EncodedId)
+		expectedSignedData := fmt.Sprintf("0_%s_%s", dataToSign, base64EncodedID)
 		if jsonBody.Data.SignedData != expectedSignedData {
 			t.Errorf("expected signed data: %s, got: %s", expectedSignedData, jsonBody.Data.SignedData)
 		}
