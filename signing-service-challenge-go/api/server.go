@@ -38,7 +38,7 @@ func NewServer(
 func (s *Server) Run() error {
 	mux := chi.NewMux()
 
-	mux.Post("/api/v0/health", http.HandlerFunc(s.Health))
+	mux.Get("/api/v0/health", http.HandlerFunc(s.Health))
 	mux.Post("/api/v0/signature_devices", http.HandlerFunc(s.signatureService.CreateSignatureDevice))
 
 	return http.ListenAndServe(s.listenAddress, mux)
