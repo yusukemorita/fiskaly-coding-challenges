@@ -19,7 +19,6 @@ func TestHealth(t *testing.T) {
 		t,
 		http.MethodGet,
 		server.URL+"/api/v0/health",
-		"", // TODO: make this optional?
 	)
 
 	expectedStatusCode := http.StatusOK

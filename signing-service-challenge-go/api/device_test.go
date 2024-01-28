@@ -248,18 +248,18 @@ func sendJsonRequest(
 	t *testing.T,
 	httpMethod string,
 	url string,
-	serializableData any,
+	serializableData ...any,
 ) *http.Response {
-	jsonBytes, err := json.Marshal(serializableData)
-	if err != nil {
-		panic(fmt.Sprintf("json.Marshal failed: err"))
+	var bodyReader io.Reader
+	if len(serializableData) > 0 {
+		jsonBytes, err := json.Marshal(serializableData[0])
+		if err != nil {
+			t.Fatal(fmt.Sprintf("json.Marshal failed: err"))
+		}
+		bodyReader = bytes.NewReader(jsonBytes)
 	}
 
-	request, err := http.NewRequest(
-		httpMethod,
-		url,
-		bytes.NewReader(jsonBytes),
-	)
+	request, err := http.NewRequest(httpMethod, url, bodyReader)
 	if err != nil {
 		panic(fmt.Sprintf("json.Marshal failed: err"))
 	}
