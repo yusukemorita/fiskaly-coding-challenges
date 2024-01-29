@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
@@ -202,4 +203,40 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 			Algorithm: device.KeyPair.AlgorithmName(),
 		},
 	)
+}
+
+type ListSignatureDevicesResponse = []ApiSignatureDevice
+
+func (s *SignatureService) ListSignatureDevice(response http.ResponseWriter, request *http.Request) {
+	devices, err := s.signatureDeviceRepository.List()
+	if err != nil {
+		WriteInternalError(response)
+		return
+	}
+
+	// sort devices by ID
+	// This is just so that the order remains stable, what the order is determined by
+	// is irrelevant
+	sort.SliceStable(devices, func(a, b int) bool {
+		deviceA := devices[a]
+		deviceB := devices[b]
+		return deviceA.ID.String() < deviceB.ID.String()
+	})
+
+	responseBody := ListSignatureDevicesResponse{}
+	for _, device := range devices {
+		publicKey, err := device.KeyPair.EncodedPublicKey()
+		if err != nil {
+			WriteInternalError(response)
+			return
+		}
+		responseBody = append(responseBody, ApiSignatureDevice{
+			ID:        device.ID.String(),
+			Label:     device.Label,
+			Algorithm: device.KeyPair.AlgorithmName(),
+			PublicKey: publicKey,
+		})
+	}
+
+	WriteAPIResponse(response, http.StatusOK, responseBody)
 }

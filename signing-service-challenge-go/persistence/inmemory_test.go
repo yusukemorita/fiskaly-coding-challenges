@@ -175,3 +175,44 @@ func TestFind(t *testing.T) {
 		}
 	})
 }
+
+func TestList(t *testing.T) {
+	repository := NewInMemorySignatureDeviceRepository()
+
+	// create rsa device
+	rsaDevice, err := domain.BuildSignatureDevice(
+		uuid.New(),
+		crypto.RSAGenerator{},
+		"my rsa key",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository.devices[rsaDevice.ID] = rsaDevice
+
+	// create ecc device
+	eccDevice, err := domain.BuildSignatureDevice(
+		uuid.New(),
+		crypto.ECCGenerator{},
+		"my ecc key",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository.devices[eccDevice.ID] = eccDevice
+
+	got, err := repository.List()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(got) != 2 {
+		t.Errorf("expected 2 devices, got %d", len(got))
+	}
+
+	if got[0] != rsaDevice && got[1] != rsaDevice {
+		t.Error("expected got to contain rsa device")
+	}
+	if got[0] != eccDevice && got[1] != eccDevice {
+		t.Error("expected got to contain ecc device")
+	}
+}

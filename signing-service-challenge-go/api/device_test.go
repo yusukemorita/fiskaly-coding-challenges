@@ -662,6 +662,79 @@ func TestFindSignatureDevice(t *testing.T) {
 	})
 }
 
+func TestListSignatureDevices(t *testing.T) {
+	// create an ecc device
+	eccDevice, err := domain.BuildSignatureDevice(
+		uuid.MustParse("e9af3524-a2ab-4671-b3c5-d7fdc10b511e"),
+		crypto.ECCGenerator{},
+		"my ecc key",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository := persistence.NewInMemorySignatureDeviceRepository()
+	err = repository.Create(eccDevice)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// create an rsa device
+	rsaDevice, err := domain.BuildSignatureDevice(
+		uuid.MustParse("f7e820e9-7bf5-4c41-a463-b038cb9336a0"),
+		crypto.RSAGenerator{},
+		"my rsa key",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = repository.Create(rsaDevice)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	signatureService := api.NewSignatureService(repository)
+	testServer := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
+	defer testServer.Close()
+
+	response := sendJsonRequest(
+		t,
+		http.MethodGet,
+		fmt.Sprintf("%s/api/v0/signature_devices", testServer.URL),
+	)
+
+	// check status code
+	expectedStatusCode := http.StatusOK
+	if response.StatusCode != expectedStatusCode {
+		t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
+	}
+
+	// check body
+	rsaPublicKey, err := rsaDevice.KeyPair.EncodedPublicKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	eccPublicKey, err := eccDevice.KeyPair.EncodedPublicKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedBody := api.ListSignatureDevicesResponse{
+		// ecc device id must come first, as the ids should be sorted alphabetically
+		{
+			ID:        eccDevice.ID.String(),
+			Label:     eccDevice.Label,
+			Algorithm: eccDevice.KeyPair.AlgorithmName(),
+			PublicKey: eccPublicKey,
+		},
+		{
+			ID:        rsaDevice.ID.String(),
+			Label:     rsaDevice.Label,
+			Algorithm: rsaDevice.KeyPair.AlgorithmName(),
+			PublicKey: rsaPublicKey,
+		},
+	}
+	compareResponseBodyData(t, response, expectedBody)
+}
+
 func compareResponseBodyData(t *testing.T, response *http.Response, expectedData any) {
 	t.Helper()
 
