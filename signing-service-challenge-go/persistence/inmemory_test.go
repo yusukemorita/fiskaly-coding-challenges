@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
@@ -210,10 +209,10 @@ func TestList(t *testing.T) {
 		t.Errorf("expected 2 devices, got %d", len(got))
 	}
 
-	if !slices.Contains(got, rsaDevice) {
+	if got[0] != rsaDevice && got[1] != rsaDevice {
 		t.Error("expected got to contain rsa device")
 	}
-	if !slices.Contains(got, eccDevice) {
+	if got[0] != eccDevice && got[1] != eccDevice {
 		t.Error("expected got to contain ecc device")
 	}
 }
