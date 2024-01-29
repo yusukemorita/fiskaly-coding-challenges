@@ -55,9 +55,9 @@ func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...str
 // WARNING:
 // All operations must be executed inside WriteTx() or ReadTx(),
 // as Go maps are not safe for concurrent use.
-// For this reason, do not hold the `SignatureDeviceRepository` directly
+// For this reason, do not expose the `SignatureDeviceRepository` directly
 // to the `api` package.
-// Instead, hold the `SignatureDeviceRepositoryProvider`, which ensures
+// Instead, expose the `SignatureDeviceRepositoryProvider`, which ensures
 // that every operation will be executed inside a transaction.
 type SignatureDeviceRepository interface {
 	Create(device SignatureDevice) error
