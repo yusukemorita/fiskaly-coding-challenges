@@ -23,8 +23,8 @@ type SignatureDevice struct {
 	KeyPair KeyPair
 	// (optional) user provided string to be displayed in the UI
 	Label string
-	// track the last signature created with this device
-	Base64EncodedLastSignature string
+	// track the base64 encoded last signature created with this device
+	LastSignature string
 	// track how many signatures have been created with this device
 	SignatureCounter uint
 }
@@ -61,7 +61,8 @@ func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...str
 // that every operation will be executed inside a transaction.
 type SignatureDeviceRepository interface {
 	Create(device SignatureDevice) error
-	Update(device SignatureDevice) error
+	// Increment the signatureCounter, and update the lastSignature
+	MarkSignatureCreated(deviceID uuid.UUID, newSignature string) error
 	Find(id uuid.UUID) (SignatureDevice, bool, error)
 	List() ([]SignatureDevice, error)
 }

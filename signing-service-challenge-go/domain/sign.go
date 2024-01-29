@@ -38,9 +38,7 @@ func SignTransaction(
 		}
 		encodedSignature = base64.StdEncoding.EncodeToString(signature)
 
-		device.Base64EncodedLastSignature = encodedSignature
-		device.SignatureCounter++
-		err = repository.Update(device)
+		err = repository.MarkSignatureCreated(device.ID, encodedSignature)
 		if err != nil {
 			return errors.New(fmt.Sprintf("failed to update signature device: %s", err))
 		}
@@ -67,7 +65,7 @@ func SecureDataToBeSigned(device SignatureDevice, data string) string {
 		encodedID := base64.StdEncoding.EncodeToString([]byte(device.ID.String()))
 		components = append(components, encodedID)
 	} else {
-		encodedLastSignature := device.Base64EncodedLastSignature
+		encodedLastSignature := device.LastSignature
 		components = append(components, encodedLastSignature)
 	}
 

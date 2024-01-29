@@ -351,8 +351,8 @@ func TestSignTransaction(t *testing.T) {
 		if device.SignatureCounter != 1 {
 			t.Errorf("device signature counter should be incremented to 1, got: %d", device.SignatureCounter)
 		}
-		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
-			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
+		if device.LastSignature != jsonBody.Data.Signature {
+			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.LastSignature)
 		}
 	})
 
@@ -366,7 +366,7 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 		device.SignatureCounter = 1
-		device.Base64EncodedLastSignature = "last-signature-base-64-encoded"
+		device.LastSignature = "last-signature-base-64-encoded"
 		repository := persistence.NewInMemorySignatureDeviceRepository()
 		err = repository.Create(device)
 		if err != nil {
@@ -418,7 +418,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 
 		// check signed_data is correct format
-		expectedSignedData := fmt.Sprintf("1_%s_%s", dataToSign, device.Base64EncodedLastSignature)
+		expectedSignedData := fmt.Sprintf("1_%s_%s", dataToSign, device.LastSignature)
 		if jsonBody.Data.SignedData != expectedSignedData {
 			t.Errorf("expected signed data: %s, got: %s", expectedSignedData, jsonBody.Data.SignedData)
 		}
@@ -434,8 +434,8 @@ func TestSignTransaction(t *testing.T) {
 		if device.SignatureCounter != 2 {
 			t.Errorf("device signature counter should be incremented to 2, got: %d", device.SignatureCounter)
 		}
-		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
-			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
+		if device.LastSignature != jsonBody.Data.Signature {
+			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.LastSignature)
 		}
 	})
 
@@ -515,8 +515,8 @@ func TestSignTransaction(t *testing.T) {
 		if device.SignatureCounter != 1 {
 			t.Errorf("device signature counter should be incremented to 1, got: %d", device.SignatureCounter)
 		}
-		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
-			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
+		if device.LastSignature != jsonBody.Data.Signature {
+			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.LastSignature)
 		}
 	})
 
@@ -530,7 +530,7 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 		device.SignatureCounter = 1
-		device.Base64EncodedLastSignature = "last-signature-base-64-encoded"
+		device.LastSignature = "last-signature-base-64-encoded"
 		repository := persistence.NewInMemorySignatureDeviceRepository()
 		err = repository.Create(device)
 		if err != nil {
@@ -582,7 +582,7 @@ func TestSignTransaction(t *testing.T) {
 		}
 
 		// check signed_data is correct format
-		expectedSignedData := fmt.Sprintf("1_%s_%s", dataToSign, device.Base64EncodedLastSignature)
+		expectedSignedData := fmt.Sprintf("1_%s_%s", dataToSign, device.LastSignature)
 		if jsonBody.Data.SignedData != expectedSignedData {
 			t.Errorf("expected signed data: %s, got: %s", expectedSignedData, jsonBody.Data.SignedData)
 		}
@@ -598,8 +598,8 @@ func TestSignTransaction(t *testing.T) {
 		if device.SignatureCounter != 2 {
 			t.Errorf("device signature counter should be incremented to 2, got: %d", device.SignatureCounter)
 		}
-		if device.Base64EncodedLastSignature != jsonBody.Data.Signature {
-			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.Base64EncodedLastSignature)
+		if device.LastSignature != jsonBody.Data.Signature {
+			t.Errorf("device last signature should be updated to %s, got: %s", jsonBody.Data.Signature, device.LastSignature)
 		}
 	})
 }

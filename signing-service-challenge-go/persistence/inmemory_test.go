@@ -81,8 +81,8 @@ func TestCreate(t *testing.T) {
 	})
 }
 
-func TestUpdate(t *testing.T) {
-	t.Run("updates attributes when device with id is found", func(t *testing.T) {
+func TestMarkSignatureCreated(t *testing.T) {
+	t.Run("increments counter and updates last signature when device with id is found", func(t *testing.T) {
 		id := uuid.New()
 		keyPair, err := crypto.ECCGenerator{}.Generate()
 		if err != nil {
@@ -97,15 +97,8 @@ func TestUpdate(t *testing.T) {
 		repository := NewInMemorySignatureDeviceRepository()
 		repository.devices[device.ID] = device
 
-		updatedDevice := domain.SignatureDevice{
-			ID:                         id,
-			KeyPair:                    keyPair,
-			Label:                      "my rsa key",
-			SignatureCounter:           1,
-			Base64EncodedLastSignature: "last-signature",
-		}
-
-		err = repository.Update(updatedDevice)
+		newSignature := "new-signature"
+		err = repository.MarkSignatureCreated(id, newSignature)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 		}
@@ -114,25 +107,18 @@ func TestUpdate(t *testing.T) {
 		if !ok {
 			t.Error("device not found")
 		}
-		if got.SignatureCounter != updatedDevice.SignatureCounter || got.Base64EncodedLastSignature != updatedDevice.Base64EncodedLastSignature {
-			t.Error("device not updated correctly")
+		if got.SignatureCounter != 1 {
+			t.Errorf("expected counter to be incremented to 1, got %d", got.SignatureCounter)
+		}
+		if got.LastSignature != newSignature {
+			t.Errorf("expected last signature to be updated to '%s', got '%s'", newSignature, got.LastSignature)
 		}
 	})
 
 	t.Run("returns error when device with id is not found", func(t *testing.T) {
 		id := uuid.New()
-		keyPair, err := crypto.ECCGenerator{}.Generate()
-		if err != nil {
-			t.Fatal(err)
-		}
-		device := domain.SignatureDevice{
-			ID:      id,
-			KeyPair: keyPair,
-			Label:   "my rsa key",
-		}
-
 		repository := NewInMemorySignatureDeviceRepository()
-		err = repository.Update(device)
+		err := repository.MarkSignatureCreated(id, "some-signature")
 		if err == nil {
 			t.Error("expected error when updating non-existent device")
 		}
