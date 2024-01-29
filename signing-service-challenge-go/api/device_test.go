@@ -672,6 +672,7 @@ func TestFindSignatureDevice(t *testing.T) {
 				ID:        device.ID.String(),
 				Label:     label,
 				PublicKey: publicKey,
+				Algorithm: "ECC",
 			},
 		)
 	})

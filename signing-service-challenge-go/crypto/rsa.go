@@ -13,6 +13,10 @@ type RSAKeyPair struct {
 	Private *rsa.PrivateKey
 }
 
+func (keyPair RSAKeyPair) AlgorithmName() string {
+	return RSAAlgorithmName
+}
+
 func (keyPair RSAKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err error) {
 	digest, err := ComputeHashDigest(dataToBeSigned)
 	if err != nil {

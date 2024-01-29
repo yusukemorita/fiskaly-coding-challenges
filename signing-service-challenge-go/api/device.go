@@ -152,6 +152,7 @@ type FindSignatureDeviceResponse struct {
 	ID        string `json:"id"`
 	Label     string `json:"label"`
 	PublicKey string `json:"public_key"`
+	Algorithm string `json:"algorithm"`
 }
 
 func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, request *http.Request) {
@@ -189,6 +190,7 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 			ID:        device.ID.String(),
 			Label:     device.Label,
 			PublicKey: publicKey,
+			Algorithm: device.KeyPair.AlgorithmName(),
 		},
 	)
 }

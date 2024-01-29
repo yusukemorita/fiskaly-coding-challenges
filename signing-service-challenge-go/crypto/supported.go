@@ -2,6 +2,11 @@ package crypto
 
 import "github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 
+const (
+	ECCAlgorithmName = "ECC"
+	RSAAlgorithmName = "RSA"
+)
+
 var supportedGenerators = []domain.KeyPairGenerator{
 	ECCGenerator{},
 	RSAGenerator{},

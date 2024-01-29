@@ -13,6 +13,10 @@ type ECCKeyPair struct {
 	Private *ecdsa.PrivateKey
 }
 
+func (keyPair ECCKeyPair) AlgorithmName() string {
+	return ECCAlgorithmName
+}
+
 func (keyPair ECCKeyPair) Sign(dataToBeSigned []byte) ([]byte, error) {
 	digest, err := ComputeHashDigest(dataToBeSigned)
 	if err != nil {

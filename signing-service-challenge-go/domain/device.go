@@ -10,6 +10,7 @@ import (
 type KeyPair interface {
 	Sign(dataToBeSigned []byte) (signature []byte, err error)
 	EncodedPublicKey() (string, error)
+	AlgorithmName() string
 }
 
 type KeyPairGenerator interface {
