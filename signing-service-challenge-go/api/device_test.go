@@ -661,12 +661,17 @@ func TestFindSignatureDevice(t *testing.T) {
 		}
 
 		// check body
+		publicKey, err := device.KeyPair.EncodedPublicKey()
+		if err != nil {
+			t.Fatal(err)
+		}
 		compareResponseBodyData(
 			t,
 			response,
 			api.FindSignatureDeviceResponse{
-				ID:    device.ID.String(),
-				Label: label,
+				ID:        device.ID.String(),
+				Label:     label,
+				PublicKey: publicKey,
 			},
 		)
 	})

@@ -148,10 +148,10 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 	)
 }
 
-// TODO: add public key
 type FindSignatureDeviceResponse struct {
-	ID    string `json:"id"`
-	Label string `json:"label"`
+	ID        string `json:"id"`
+	Label     string `json:"label"`
+	PublicKey string `json:"public_key"`
 }
 
 func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, request *http.Request) {
@@ -176,12 +176,19 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 		return
 	}
 
+	publicKey, err := device.KeyPair.EncodedPublicKey()
+	if err != nil {
+		WriteInternalError(response)
+		return
+	}
+
 	WriteAPIResponse(
 		response,
 		http.StatusOK,
 		FindSignatureDeviceResponse{
-			ID:    device.ID.String(),
-			Label: device.Label,
+			ID:        device.ID.String(),
+			Label:     device.Label,
+			PublicKey: publicKey,
 		},
 	)
 }
