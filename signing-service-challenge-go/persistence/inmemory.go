@@ -3,6 +3,7 @@ package persistence
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 	"github.com/google/uuid"
@@ -10,6 +11,7 @@ import (
 
 type InMemorySignatureDeviceRepository struct {
 	devices map[uuid.UUID]domain.SignatureDevice
+	lock    *sync.RWMutex
 }
 
 func (repository InMemorySignatureDeviceRepository) Create(device domain.SignatureDevice) error {
