@@ -3,6 +3,7 @@ package persistence
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
@@ -58,6 +59,8 @@ func (repository InMemorySignatureDeviceRepository) MarkSignatureCreated(deviceI
 	device.SignatureCounter++
 	device.LastSignature = newSignature
 	repository.devices[deviceID] = device
+
+	log.Printf("updated device id: %s counter: %d", device.ID, device.SignatureCounter)
 
 	return nil
 }

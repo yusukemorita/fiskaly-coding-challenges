@@ -21,7 +21,7 @@ func sendJsonRequest(
 	if len(serializableData) > 0 {
 		jsonBytes, err := json.Marshal(serializableData[0])
 		if err != nil {
-			t.Fatal(fmt.Sprintf("json.Marshal failed: err"))
+			t.Fatal(fmt.Sprintf("json.Marshal failed: %s", err))
 		}
 		bodyReader = bytes.NewReader(jsonBytes)
 	}
