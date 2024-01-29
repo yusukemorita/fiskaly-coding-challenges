@@ -76,6 +76,7 @@ func WriteErrorResponse(w http.ResponseWriter, code int, errors []string) {
 // and writes those as an HTTP response in a structured format.
 func WriteAPIResponse(w http.ResponseWriter, code int, data interface{}) {
 	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
 
 	response := Response{
 		Data: data,
