@@ -56,7 +56,7 @@ func (repository InMemorySignatureDeviceRepository) MarkSignatureCreated(deviceI
 	}
 
 	device.SignatureCounter++
-	device.Base64EncodedLastSignature = newSignature
+	device.LastSignature = newSignature
 	repository.devices[deviceID] = device
 
 	return nil

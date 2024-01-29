@@ -110,8 +110,8 @@ func TestMarkSignatureCreated(t *testing.T) {
 		if got.SignatureCounter != 1 {
 			t.Errorf("expected counter to be incremented to 1, got %d", got.SignatureCounter)
 		}
-		if got.Base64EncodedLastSignature != newSignature {
-			t.Errorf("expected last signature to be updated to '%s', got '%s'", newSignature, got.Base64EncodedLastSignature)
+		if got.LastSignature != newSignature {
+			t.Errorf("expected last signature to be updated to '%s', got '%s'", newSignature, got.LastSignature)
 		}
 	})
 

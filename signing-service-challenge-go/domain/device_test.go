@@ -51,8 +51,8 @@ func TestBuildSignatureDevice(t *testing.T) {
 			t.Errorf("expected initial signature counter value to be 0, got: %d", device.SignatureCounter)
 		}
 
-		if device.Base64EncodedLastSignature != "" {
-			t.Errorf("expected initial last signature value to be blank, got: %s", device.Base64EncodedLastSignature)
+		if device.LastSignature != "" {
+			t.Errorf("expected initial last signature value to be blank, got: %s", device.LastSignature)
 		}
 
 		if device.Label != "" {

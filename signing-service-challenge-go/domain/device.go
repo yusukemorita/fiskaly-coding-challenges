@@ -23,8 +23,8 @@ type SignatureDevice struct {
 	KeyPair KeyPair
 	// (optional) user provided string to be displayed in the UI
 	Label string
-	// track the last signature created with this device
-	Base64EncodedLastSignature string
+	// track the base64 encoded last signature created with this device
+	LastSignature string
 	// track how many signatures have been created with this device
 	SignatureCounter uint
 }

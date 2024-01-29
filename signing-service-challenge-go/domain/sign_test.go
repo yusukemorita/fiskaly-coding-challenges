@@ -98,8 +98,8 @@ func TestSignTransaction(t *testing.T) {
 		if device.SignatureCounter != 1 {
 			t.Errorf("expected signature counter to be incremented to 1, got %d", device.SignatureCounter)
 		}
-		if device.Base64EncodedLastSignature != encodedSignature {
-			t.Errorf("expected last signature to be updated to: %s, got %s", encodedSignature, device.Base64EncodedLastSignature)
+		if device.LastSignature != encodedSignature {
+			t.Errorf("expected last signature to be updated to: %s, got %s", encodedSignature, device.LastSignature)
 		}
 	})
 }
@@ -109,8 +109,8 @@ func TestSecureDataToBeSigned(t *testing.T) {
 		base64EncodedLastSignature := "bGFzdC1zaWduYXR1cmU="
 
 		device := domain.SignatureDevice{
-			Base64EncodedLastSignature: base64EncodedLastSignature,
-			SignatureCounter:           1,
+			LastSignature:    base64EncodedLastSignature,
+			SignatureCounter: 1,
 		}
 		data := "some transaction data"
 
@@ -127,9 +127,9 @@ func TestSecureDataToBeSigned(t *testing.T) {
 		base64EncodedID := "ZWQ0MDU5N2MtNTJiNy00MGJjLTllMTUtODNlNDc0MWExMDJi"
 
 		device := domain.SignatureDevice{
-			ID:                         id,
-			Base64EncodedLastSignature: "",
-			SignatureCounter:           0,
+			ID:               id,
+			LastSignature:    "",
+			SignatureCounter: 0,
 		}
 		data := "some transaction data"
 

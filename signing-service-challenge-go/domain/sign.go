@@ -65,7 +65,7 @@ func SecureDataToBeSigned(device SignatureDevice, data string) string {
 		encodedID := base64.StdEncoding.EncodeToString([]byte(device.ID.String()))
 		components = append(components, encodedID)
 	} else {
-		encodedLastSignature := device.Base64EncodedLastSignature
+		encodedLastSignature := device.LastSignature
 		components = append(components, encodedLastSignature)
 	}
 
