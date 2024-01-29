@@ -13,7 +13,7 @@ import (
 type RSAGenerator struct{}
 
 func (g RSAGenerator) AlgorithmName() string {
-	return "RSA"
+	return RSAAlgorithmName
 }
 
 // convert the return type to `domain.KeyPair`
@@ -39,7 +39,7 @@ func (g RSAGenerator) generate() (*RSAKeyPair, error) {
 type ECCGenerator struct{}
 
 func (g ECCGenerator) AlgorithmName() string {
-	return "ECC"
+	return ECCAlgorithmName
 }
 
 // convert the return type to `domain.KeyPair`

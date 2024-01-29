@@ -40,6 +40,7 @@ func (s *Server) HTTPHandler() http.Handler {
 	mux.Get("/api/v0/health", http.HandlerFunc(s.Health))
 	mux.Post("/api/v0/signature_devices", http.HandlerFunc(s.signatureService.CreateSignatureDevice))
 	mux.Post("/api/v0/signature_devices/{deviceID}/signatures", http.HandlerFunc(s.signatureService.SignTransaction))
+	mux.Get("/api/v0/signature_devices/{deviceID}", http.HandlerFunc(s.signatureService.FindSignatureDevice))
 	return mux
 }
 

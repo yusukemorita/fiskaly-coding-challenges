@@ -12,6 +12,14 @@ func (keyPair MockKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err er
 	return nil, nil
 }
 
+func (keyPair MockKeyPair) EncodedPublicKey() (string, error) {
+	return "", nil
+}
+
+func (keyPair MockKeyPair) AlgorithmName() string {
+	return ""
+}
+
 type MockKeyPairGenerator struct{}
 
 func (g MockKeyPairGenerator) AlgorithmName() string {

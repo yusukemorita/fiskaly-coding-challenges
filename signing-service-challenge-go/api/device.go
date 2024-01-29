@@ -147,3 +147,50 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 		},
 	)
 }
+
+type FindSignatureDeviceResponse struct {
+	ID        string `json:"id"`
+	Label     string `json:"label"`
+	PublicKey string `json:"public_key"`
+	Algorithm string `json:"algorithm"`
+}
+
+func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, request *http.Request) {
+	deviceIDString := chi.URLParam(request, "deviceID")
+	deviceID, err := uuid.Parse(deviceIDString)
+	if err != nil {
+		WriteErrorResponse(response, http.StatusBadRequest, []string{
+			"id is not a valid uuid",
+		})
+		return
+	}
+
+	device, ok, err := s.signatureDeviceRepository.Find(deviceID)
+	if err != nil {
+		WriteInternalError(response)
+		return
+	}
+	if !ok {
+		WriteErrorResponse(response, http.StatusNotFound, []string{
+			"signature device not found",
+		})
+		return
+	}
+
+	publicKey, err := device.KeyPair.EncodedPublicKey()
+	if err != nil {
+		WriteInternalError(response)
+		return
+	}
+
+	WriteAPIResponse(
+		response,
+		http.StatusOK,
+		FindSignatureDeviceResponse{
+			ID:        device.ID.String(),
+			Label:     device.Label,
+			PublicKey: publicKey,
+			Algorithm: device.KeyPair.AlgorithmName(),
+		},
+	)
+}

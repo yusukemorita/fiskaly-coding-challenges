@@ -13,6 +13,10 @@ type ECCKeyPair struct {
 	Private *ecdsa.PrivateKey
 }
 
+func (keyPair ECCKeyPair) AlgorithmName() string {
+	return ECCAlgorithmName
+}
+
 func (keyPair ECCKeyPair) Sign(dataToBeSigned []byte) ([]byte, error) {
 	digest, err := ComputeHashDigest(dataToBeSigned)
 	if err != nil {
@@ -20,6 +24,11 @@ func (keyPair ECCKeyPair) Sign(dataToBeSigned []byte) ([]byte, error) {
 	}
 
 	return keyPair.Private.Sign(rand.Reader, digest, nil)
+}
+
+func (keyPair ECCKeyPair) EncodedPublicKey() (string, error) {
+	public, _, err := ECCMarshaler{}.Encode(keyPair)
+	return string(public), err
 }
 
 // ECCMarshaler can encode and decode an ECC key pair.

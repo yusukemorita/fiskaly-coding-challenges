@@ -13,6 +13,10 @@ type RSAKeyPair struct {
 	Private *rsa.PrivateKey
 }
 
+func (keyPair RSAKeyPair) AlgorithmName() string {
+	return RSAAlgorithmName
+}
+
 func (keyPair RSAKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err error) {
 	digest, err := ComputeHashDigest(dataToBeSigned)
 	if err != nil {
@@ -26,6 +30,11 @@ func (keyPair RSAKeyPair) Sign(dataToBeSigned []byte) (signature []byte, err err
 		digest,
 		nil,
 	)
+}
+
+func (keyPair RSAKeyPair) EncodedPublicKey() (string, error) {
+	public, _, err := RSAMarshaler{}.Marshal(keyPair)
+	return string(public), err
 }
 
 // RSAMarshaler can encode and decode an RSA key pair.

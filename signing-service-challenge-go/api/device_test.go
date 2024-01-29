@@ -596,3 +596,103 @@ func TestSignTransaction(t *testing.T) {
 		}
 	})
 }
+
+func TestFindSignatureDevice(t *testing.T) {
+	t.Run("returns not found when device with id does not exist", func(t *testing.T) {
+		id := uuid.NewString()
+
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		signatureService := api.NewSignatureService(repository)
+		testServer := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
+		defer testServer.Close()
+
+		response := sendJsonRequest(
+			t,
+			http.MethodGet,
+			fmt.Sprintf("%s/api/v0/signature_devices/%s", testServer.URL, id),
+		)
+
+		// check status code
+		expectedStatusCode := http.StatusNotFound
+		if response.StatusCode != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
+		}
+
+		// check body
+		body := readBody(t, response)
+		expectedBody := `{"errors":["signature device not found"]}`
+		diff := cmp.Diff(body, expectedBody)
+		if diff != "" {
+			t.Errorf("unexpected diff: %s", diff)
+		}
+	})
+
+	t.Run("returns device when device with id exists", func(t *testing.T) {
+		// create a device
+		label := "my ecc key"
+		device, err := domain.BuildSignatureDevice(
+			uuid.New(),
+			crypto.ECCGenerator{},
+			label,
+		)
+		if err != nil {
+			t.Fatal(err)
+		}
+		repository := persistence.NewInMemorySignatureDeviceRepository()
+		err = repository.Create(device)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		signatureService := api.NewSignatureService(repository)
+		testServer := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
+		defer testServer.Close()
+
+		response := sendJsonRequest(
+			t,
+			http.MethodGet,
+			fmt.Sprintf("%s/api/v0/signature_devices/%s", testServer.URL, device.ID.String()),
+		)
+
+		// check status code
+		expectedStatusCode := http.StatusOK
+		if response.StatusCode != expectedStatusCode {
+			t.Errorf("expected status code: %d, got: %d", expectedStatusCode, response.StatusCode)
+		}
+
+		// check body
+		publicKey, err := device.KeyPair.EncodedPublicKey()
+		if err != nil {
+			t.Fatal(err)
+		}
+		compareResponseBodyData(
+			t,
+			response,
+			api.FindSignatureDeviceResponse{
+				ID:        device.ID.String(),
+				Label:     label,
+				PublicKey: publicKey,
+				Algorithm: "ECC",
+			},
+		)
+	})
+}
+
+func compareResponseBodyData(t *testing.T, response *http.Response, expectedData any) {
+	t.Helper()
+
+	body := readBody(t, response)
+	expectedResponse := struct {
+		Data any `json:"data"`
+	}{
+		Data: expectedData,
+	}
+	expectedBody, err := json.MarshalIndent(expectedResponse, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	diff := cmp.Diff(body, string(expectedBody))
+	if diff != "" {
+		t.Errorf("unexpected diff: %s", diff)
+	}
+}
