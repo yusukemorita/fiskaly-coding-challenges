@@ -22,10 +22,12 @@ func NewSignatureService(p domain.SignatureDeviceRepositoryProvider) SignatureSe
 }
 
 type ApiSignatureDevice struct {
-	ID        string `json:"id"`
-	Label     string `json:"label"`
-	PublicKey string `json:"public_key"`
-	Algorithm string `json:"algorithm"`
+	ID               string `json:"id"`
+	Label            string `json:"label"`
+	PublicKey        string `json:"public_key"`
+	Algorithm        string `json:"algorithm"`
+	SignatureCounter uint   `json:"signature_counter"`
+	LastSignature    string `json:"last_signature"`
 }
 
 type CreateSignatureDeviceResponse = ApiSignatureDevice
@@ -108,10 +110,12 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	}
 
 	responseBody := CreateSignatureDeviceResponse{
-		ID:        device.ID.String(),
-		Label:     device.Label,
-		PublicKey: publicKey,
-		Algorithm: device.KeyPair.AlgorithmName(),
+		ID:               device.ID.String(),
+		Label:            device.Label,
+		PublicKey:        publicKey,
+		Algorithm:        device.KeyPair.AlgorithmName(),
+		SignatureCounter: device.SignatureCounter,
+		LastSignature:    device.LastSignature,
 	}
 	WriteAPIResponse(response, http.StatusCreated, responseBody)
 }
@@ -209,10 +213,12 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 		response,
 		http.StatusOK,
 		FindSignatureDeviceResponse{
-			ID:        device.ID.String(),
-			Label:     device.Label,
-			PublicKey: publicKey,
-			Algorithm: device.KeyPair.AlgorithmName(),
+			ID:               device.ID.String(),
+			Label:            device.Label,
+			PublicKey:        publicKey,
+			Algorithm:        device.KeyPair.AlgorithmName(),
+			SignatureCounter: device.SignatureCounter,
+			LastSignature:    device.LastSignature,
 		},
 	)
 }
@@ -251,10 +257,12 @@ func (s *SignatureService) ListSignatureDevice(response http.ResponseWriter, req
 			return
 		}
 		responseBody = append(responseBody, ApiSignatureDevice{
-			ID:        device.ID.String(),
-			Label:     device.Label,
-			Algorithm: device.KeyPair.AlgorithmName(),
-			PublicKey: publicKey,
+			ID:               device.ID.String(),
+			Label:            device.Label,
+			Algorithm:        device.KeyPair.AlgorithmName(),
+			PublicKey:        publicKey,
+			SignatureCounter: device.SignatureCounter,
+			LastSignature:    device.LastSignature,
 		})
 	}
 
