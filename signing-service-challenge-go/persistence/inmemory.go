@@ -9,9 +9,34 @@ import (
 	"github.com/google/uuid"
 )
 
+type InMemorySignatureDeviceRepositoryProvider struct {
+	repository InMemorySignatureDeviceRepository
+	mutex      *sync.RWMutex
+}
+
+// Use when any of the repository methods in do() write
+func (provider InMemorySignatureDeviceRepositoryProvider) WriteTx(do func(domain.SignatureDeviceRepository) error) error {
+	provider.mutex.Lock()
+	defer provider.mutex.Unlock()
+	return do(provider.repository)
+}
+
+// Use when none of the repository methods in do() write
+func (provider InMemorySignatureDeviceRepositoryProvider) ReadTx(do func(domain.SignatureDeviceRepository) error) error {
+	provider.mutex.RLock()
+	defer provider.mutex.RUnlock()
+	return do(provider.repository)
+}
+
+func NewInMemorySignatureDeviceRepositoryProvider(repository InMemorySignatureDeviceRepository) InMemorySignatureDeviceRepositoryProvider {
+	return InMemorySignatureDeviceRepositoryProvider{
+		repository: repository,
+		mutex:      &sync.RWMutex{},
+	}
+}
+
 type InMemorySignatureDeviceRepository struct {
 	devices map[uuid.UUID]domain.SignatureDevice
-	mutex   *sync.RWMutex
 }
 
 func (repository InMemorySignatureDeviceRepository) Create(device domain.SignatureDevice) error {
@@ -58,15 +83,8 @@ func (repository InMemorySignatureDeviceRepository) List() ([]domain.SignatureDe
 	return allDevices, nil
 }
 
-func (repository InMemorySignatureDeviceRepository) Tx(do func() error) error {
-	repository.mutex.Lock()
-	defer repository.mutex.Unlock()
-	return do()
-}
-
 func NewInMemorySignatureDeviceRepository() InMemorySignatureDeviceRepository {
 	return InMemorySignatureDeviceRepository{
 		devices: map[uuid.UUID]domain.SignatureDevice{},
-		mutex:   &sync.RWMutex{},
 	}
 }

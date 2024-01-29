@@ -15,7 +15,11 @@ const (
 func main() {
 	server := api.NewServer(
 		ListenAddress,
-		api.NewSignatureService(persistence.NewInMemorySignatureDeviceRepository()),
+		api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(
+				persistence.NewInMemorySignatureDeviceRepository(),
+			),
+		),
 	)
 
 	if err := server.Run(); err != nil {

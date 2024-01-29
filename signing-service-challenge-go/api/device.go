@@ -12,12 +12,12 @@ import (
 )
 
 type SignatureService struct {
-	signatureDeviceRepository domain.SignatureDeviceRepository
+	repositoryProvider domain.SignatureDeviceRepositoryProvider
 }
 
-func NewSignatureService(repository domain.SignatureDeviceRepository) SignatureService {
+func NewSignatureService(p domain.SignatureDeviceRepositoryProvider) SignatureService {
 	return SignatureService{
-		signatureDeviceRepository: repository,
+		repositoryProvider: p,
 	}
 }
 
@@ -57,8 +57,8 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 	var idIsDuplicate bool
 	var algorithmIsInvalid bool
 	var device domain.SignatureDevice
-	err = s.signatureDeviceRepository.Tx(func() error {
-		_, ok, err := s.signatureDeviceRepository.Find(id)
+	err = s.repositoryProvider.WriteTx(func(repository domain.SignatureDeviceRepository) error {
+		_, ok, err := repository.Find(id)
 		if err != nil {
 			return err
 		}
@@ -78,7 +78,7 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 			return err
 		}
 
-		if err := s.signatureDeviceRepository.Create(device); err != nil {
+		if err := repository.Create(device); err != nil {
 			return err
 		}
 
@@ -146,7 +146,7 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 
 	deviceFound, encodedSignature, signedData, err := domain.SignTransaction(
 		deviceID,
-		s.signatureDeviceRepository,
+		s.repositoryProvider,
 		requestBody.DataToBeSigned,
 	)
 	if err != nil {
@@ -184,8 +184,8 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 
 	var device domain.SignatureDevice
 	var deviceFound bool
-	err = s.signatureDeviceRepository.Tx(func() error {
-		device, deviceFound, err = s.signatureDeviceRepository.Find(deviceID)
+	err = s.repositoryProvider.ReadTx(func(repository domain.SignatureDeviceRepository) error {
+		device, deviceFound, err = repository.Find(deviceID)
 		return err
 	})
 	if err != nil {
@@ -221,12 +221,13 @@ type ListSignatureDevicesResponse = []ApiSignatureDevice
 
 func (s *SignatureService) ListSignatureDevice(response http.ResponseWriter, request *http.Request) {
 	var devices []domain.SignatureDevice
-	err := s.signatureDeviceRepository.Tx(func() error {
-		d, err := s.signatureDeviceRepository.List()
+	err := s.repositoryProvider.ReadTx(func(repository domain.SignatureDeviceRepository) error {
+		d, err := repository.List()
 		if err != nil {
 			return err
 		}
 		devices = d
+		return nil
 	})
 	if err != nil {
 		WriteInternalError(response)

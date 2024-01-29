@@ -16,10 +16,12 @@ import (
 func TestSignTransaction(t *testing.T) {
 	t.Run("returns deviceFound: false when device with id does not exist", func(t *testing.T) {
 		dataToBeSigned := "some-transaction-data"
-		repository := persistence.NewInMemorySignatureDeviceRepository()
+		provider := persistence.NewInMemorySignatureDeviceRepositoryProvider(
+			persistence.NewInMemorySignatureDeviceRepository(),
+		)
 		deviceID := uuid.MustParse("121fe402-762a-411a-8eeb-9e6c3ca16886")
 
-		deviceFound, _, _, err := domain.SignTransaction(deviceID, repository, dataToBeSigned)
+		deviceFound, _, _, err := domain.SignTransaction(deviceID, provider, dataToBeSigned)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -41,7 +43,11 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		deviceFound, encodedSignature, signedData, err := domain.SignTransaction(deviceID, repository, dataToBeSigned)
+		deviceFound, encodedSignature, signedData, err := domain.SignTransaction(
+			deviceID,
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+			dataToBeSigned,
+		)
 		if err != nil {
 			t.Fatal(err)
 		}

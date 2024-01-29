@@ -12,7 +12,7 @@ import (
 
 func SignTransaction(
 	deviceID uuid.UUID,
-	deviceRepository SignatureDeviceRepository,
+	repositoryProvider SignatureDeviceRepositoryProvider,
 	dataToBeSigned string,
 ) (
 	deviceFound bool,
@@ -20,8 +20,8 @@ func SignTransaction(
 	signedData string,
 	err error,
 ) {
-	txErr := deviceRepository.Tx(func() error {
-		device, ok, err := deviceRepository.Find(deviceID)
+	txErr := repositoryProvider.WriteTx(func(repository SignatureDeviceRepository) error {
+		device, ok, err := repository.Find(deviceID)
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ func SignTransaction(
 		// 3. Update the device, and release the lock
 		device.Base64EncodedLastSignature = encodedSignature
 		device.SignatureCounter++
-		err = deviceRepository.Update(device)
+		err = repository.Update(device)
 		if err != nil {
 			return errors.New(fmt.Sprintf("failed to update signature device: %s", err))
 		}
