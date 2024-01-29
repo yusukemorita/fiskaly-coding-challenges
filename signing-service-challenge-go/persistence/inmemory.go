@@ -41,6 +41,17 @@ func (repository InMemorySignatureDeviceRepository) Find(id uuid.UUID) (domain.S
 	return device, true, nil
 }
 
+// order is not guaranteed
+func (repository InMemorySignatureDeviceRepository) List() ([]domain.SignatureDevice, error) {
+	allDevices := []domain.SignatureDevice{}
+
+	for _, device := range repository.devices {
+		allDevices = append(allDevices, device)
+	}
+
+	return allDevices, nil
+}
+
 func NewInMemorySignatureDeviceRepository() InMemorySignatureDeviceRepository {
 	return InMemorySignatureDeviceRepository{
 		devices: map[uuid.UUID]domain.SignatureDevice{},

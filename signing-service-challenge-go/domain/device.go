@@ -56,4 +56,5 @@ type SignatureDeviceRepository interface {
 	Create(device SignatureDevice) error
 	Update(device SignatureDevice) error
 	Find(id uuid.UUID) (SignatureDevice, bool, error)
+	List() ([]SignatureDevice, error)
 }

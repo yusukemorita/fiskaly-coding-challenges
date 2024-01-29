@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
@@ -174,4 +175,45 @@ func TestFind(t *testing.T) {
 			t.Error("expected found: false")
 		}
 	})
+}
+
+func TestList(t *testing.T) {
+	repository := NewInMemorySignatureDeviceRepository()
+
+	// create rsa device
+	rsaDevice, err := domain.BuildSignatureDevice(
+		uuid.New(),
+		crypto.RSAGenerator{},
+		"my rsa key",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository.devices[rsaDevice.ID] = rsaDevice
+
+	// create ecc device
+	eccDevice, err := domain.BuildSignatureDevice(
+		uuid.New(),
+		crypto.ECCGenerator{},
+		"my ecc key",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	repository.devices[eccDevice.ID] = eccDevice
+
+	got, err := repository.List()
+	if err != nil {
+		t.Error(err)
+	}
+	if len(got) != 2 {
+		t.Errorf("expected 2 devices, got %d", len(got))
+	}
+
+	if !slices.Contains(got, rsaDevice) {
+		t.Error("expected got to contain rsa device")
+	}
+	if !slices.Contains(got, eccDevice) {
+		t.Error("expected got to contain ecc device")
+	}
 }
