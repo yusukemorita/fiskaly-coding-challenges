@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-	"slices"
+	"sort"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/crypto"
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
@@ -217,12 +217,10 @@ func (s *SignatureService) ListSignatureDevice(response http.ResponseWriter, req
 	// sort devices by ID
 	// This is just so that the order remains stable, what the order is determined by
 	// is irrelevant
-	slices.SortStableFunc(devices, func(a, b domain.SignatureDevice) int {
-		if a.ID.String() > b.ID.String() {
-			return 1
-		} else {
-			return -1
-		}
+	sort.SliceStable(devices, func(a, b int) bool {
+		deviceA := devices[a]
+		deviceB := devices[b]
+		return deviceA.ID.String() < deviceB.ID.String()
 	})
 
 	responseBody := ListSignatureDevicesResponse{}
