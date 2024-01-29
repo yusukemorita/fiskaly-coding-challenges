@@ -154,35 +154,27 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		}
 
 		// check body
-		body := readBody(t, response)
-		expectedBody := fmt.Sprintf(`{
-  "data": {
-    "signature_device_id": "%s"
-  }
-}`, id)
-		diff := cmp.Diff(body, expectedBody)
-		if diff != "" {
-			t.Errorf("unexpected diff: %s", diff)
-		}
-
-		// check persisted data
-		device, found, err := repository.Find(id)
+		createdDevice, ok, err := repository.Find(id)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
-		if !found {
-			t.Error("expected device with id to be found")
-		}
-		if device.ID != id {
-			t.Errorf("id not persisted correctly. expected: %s, got: %s", id, device.ID)
-		}
-		if device.Label != "" {
-			t.Errorf("label not persisted correctly. expected blank string, got: %s", device.Label)
-		}
-		_, ok := device.KeyPair.(*crypto.RSAKeyPair)
 		if !ok {
-			t.Errorf("key pair generation failed: %s", err)
+			t.Error("created device not found")
 		}
+		publicKey, err := createdDevice.KeyPair.EncodedPublicKey()
+		if err != nil {
+			t.Fatal(err)
+		}
+		compareResponseBodyData(
+			t,
+			response,
+			api.CreateSignatureDeviceResponse{
+				ID:        id.String(),
+				Algorithm: algorithmName,
+				Label:     "",
+				PublicKey: publicKey,
+			},
+		)
 	})
 
 	t.Run("creates a SignatureDevice with a label successfully", func(t *testing.T) {
@@ -213,35 +205,27 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		}
 
 		// check body
-		body := readBody(t, response)
-		expectedBody := fmt.Sprintf(`{
-  "data": {
-    "signature_device_id": "%s"
-  }
-}`, id)
-		diff := cmp.Diff(body, expectedBody)
-		if diff != "" {
-			t.Errorf("unexpected diff: %s", diff)
-		}
-
-		// check persisted data
-		device, found, err := repository.Find(id)
+		createdDevice, ok, err := repository.Find(id)
 		if err != nil {
-			t.Error(err)
+			t.Fatal(err)
 		}
-		if !found {
-			t.Error("expected device with id to be found")
-		}
-		if device.ID != id {
-			t.Errorf("id not persisted correctly. expected: %s, got: %s", id, device.ID)
-		}
-		if device.Label != label {
-			t.Errorf("label not persisted correctly. expected: %s, got: %s", label, device.Label)
-		}
-		_, ok := device.KeyPair.(*crypto.RSAKeyPair)
 		if !ok {
-			t.Errorf("key pair generation failed: %s", err)
+			t.Error("created device not found")
 		}
+		publicKey, err := createdDevice.KeyPair.EncodedPublicKey()
+		if err != nil {
+			t.Fatal(err)
+		}
+		compareResponseBodyData(
+			t,
+			response,
+			api.CreateSignatureDeviceResponse{
+				ID:        id.String(),
+				Algorithm: algorithmName,
+				Label:     label,
+				PublicKey: publicKey,
+			},
+		)
 	})
 }
 

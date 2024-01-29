@@ -20,9 +20,14 @@ func NewSignatureService(repository domain.SignatureDeviceRepository) SignatureS
 	}
 }
 
-type CreateSignatureDeviceResponse struct {
-	ID string `json:"signature_device_id"`
+type ApiSignatureDevice struct {
+	ID        string `json:"id"`
+	Label     string `json:"label"`
+	PublicKey string `json:"public_key"`
+	Algorithm string `json:"algorithm"`
 }
+
+type CreateSignatureDeviceResponse = ApiSignatureDevice
 
 type CreateSignatureDeviceRequest struct {
 	ID        string `json:"id"`
@@ -82,8 +87,17 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
+	publicKey, err := device.KeyPair.EncodedPublicKey()
+	if err != nil {
+		WriteInternalError(response)
+		return
+	}
+
 	responseBody := CreateSignatureDeviceResponse{
-		ID: device.ID.String(),
+		ID:        device.ID.String(),
+		Label:     device.Label,
+		PublicKey: publicKey,
+		Algorithm: device.KeyPair.AlgorithmName(),
 	}
 	WriteAPIResponse(response, http.StatusCreated, responseBody)
 }
@@ -148,12 +162,7 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 	)
 }
 
-type FindSignatureDeviceResponse struct {
-	ID        string `json:"id"`
-	Label     string `json:"label"`
-	PublicKey string `json:"public_key"`
-	Algorithm string `json:"algorithm"`
-}
+type FindSignatureDeviceResponse = ApiSignatureDevice
 
 func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, request *http.Request) {
 	deviceIDString := chi.URLParam(request, "deviceID")
