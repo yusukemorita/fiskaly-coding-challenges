@@ -54,6 +54,11 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
+	mutex := s.signatureDeviceRepository.Mutex()
+	// acquire a write lock here, as there is a write lock later on in
+	// this function
+	mutex.Lock()
+	defer mutex.Unlock()
 	_, ok, err := s.signatureDeviceRepository.Find(id)
 	if err != nil {
 		WriteInternalError(response)
@@ -81,9 +86,6 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
-	mutex := s.signatureDeviceRepository.Mutex()
-	mutex.Lock()
-	defer mutex.Unlock()
 	err = s.signatureDeviceRepository.Create(device)
 	if err != nil {
 		// In a real application, this error would be logged and sent to an error notification service
@@ -172,6 +174,9 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 		return
 	}
 
+	mutex := s.signatureDeviceRepository.Mutex()
+	mutex.RLock()
+	defer mutex.RUnlock()
 	device, ok, err := s.signatureDeviceRepository.Find(deviceID)
 	if err != nil {
 		WriteInternalError(response)
@@ -205,6 +210,9 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 type ListSignatureDevicesResponse = []ApiSignatureDevice
 
 func (s *SignatureService) ListSignatureDevice(response http.ResponseWriter, request *http.Request) {
+	mutex := s.signatureDeviceRepository.Mutex()
+	mutex.RLock()
+	defer mutex.RUnlock()
 	devices, err := s.signatureDeviceRepository.List()
 	if err != nil {
 		WriteInternalError(response)
