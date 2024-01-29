@@ -81,6 +81,9 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
+	mutex := s.signatureDeviceRepository.Mutex()
+	mutex.Lock()
+	defer mutex.Unlock()
 	err = s.signatureDeviceRepository.Create(device)
 	if err != nil {
 		// In a real application, this error would be logged and sent to an error notification service

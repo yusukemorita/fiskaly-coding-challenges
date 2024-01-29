@@ -11,7 +11,7 @@ import (
 
 type InMemorySignatureDeviceRepository struct {
 	devices map[uuid.UUID]domain.SignatureDevice
-	lock    *sync.RWMutex
+	mutex   *sync.RWMutex
 }
 
 func (repository InMemorySignatureDeviceRepository) Create(device domain.SignatureDevice) error {
@@ -56,6 +56,10 @@ func (repository InMemorySignatureDeviceRepository) List() ([]domain.SignatureDe
 	}
 
 	return allDevices, nil
+}
+
+func (repository InMemorySignatureDeviceRepository) Mutex() *sync.RWMutex {
+	return repository.mutex
 }
 
 func NewInMemorySignatureDeviceRepository() InMemorySignatureDeviceRepository {
