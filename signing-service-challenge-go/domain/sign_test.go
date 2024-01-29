@@ -141,3 +141,9 @@ func TestSecureDataToBeSigned(t *testing.T) {
 		}
 	})
 }
+
+// RSA
+// 1b6bfcac-441e-4498-b1e8-5df44dd3d087
+
+// ECC
+// 1f2d27a0-33e9-4dec-8b78-66e020220a83

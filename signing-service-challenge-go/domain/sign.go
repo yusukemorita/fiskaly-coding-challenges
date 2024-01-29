@@ -31,19 +31,13 @@ func SignTransaction(
 		}
 		deviceFound = true
 
-		// 1. Read `lastSignature` and `signatureCounter` from `device`
-		//    (these values cannot change until update is complete)
-		//    If data was persisted in MySQL, for example, a locking read would be used
 		signedData = SecureDataToBeSigned(device, dataToBeSigned)
-
-		// 2. Use the data read in 1. to create the signature
 		signature, err := device.Sign(signedData)
 		if err != nil {
 			return errors.New(fmt.Sprintf("failed to sign transaction: %s", err))
 		}
 		encodedSignature = base64.StdEncoding.EncodeToString(signature)
 
-		// 3. Update the device, and release the lock
 		device.Base64EncodedLastSignature = encodedSignature
 		device.SignatureCounter++
 		err = repository.Update(device)
