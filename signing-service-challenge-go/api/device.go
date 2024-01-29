@@ -54,42 +54,50 @@ func (s *SignatureService) CreateSignatureDevice(response http.ResponseWriter, r
 		return
 	}
 
-	mutex := s.signatureDeviceRepository.Mutex()
-	// acquire a write lock here, as there is a write lock later on in
-	// this function
-	mutex.Lock()
-	defer mutex.Unlock()
-	_, ok, err := s.signatureDeviceRepository.Find(id)
+	var idIsDuplicate bool
+	var algorithmIsInvalid bool
+	var device domain.SignatureDevice
+	err = s.signatureDeviceRepository.Tx(func() error {
+		_, ok, err := s.signatureDeviceRepository.Find(id)
+		if err != nil {
+			return err
+		}
+		if ok {
+			idIsDuplicate = true
+			return nil
+		}
+
+		generator, found := crypto.FindKeyPairGenerator(requestBody.Algorithm)
+		if !found {
+			algorithmIsInvalid = true
+			return nil
+		}
+
+		device, err = domain.BuildSignatureDevice(id, generator, requestBody.Label)
+		if err != nil {
+			return err
+		}
+
+		if err := s.signatureDeviceRepository.Create(device); err != nil {
+			return err
+		}
+
+		return nil
+	})
 	if err != nil {
 		WriteInternalError(response)
 		return
 	}
-	if ok {
+	if idIsDuplicate {
 		WriteErrorResponse(response, http.StatusBadRequest, []string{
 			"duplicate id",
 		})
 		return
 	}
-
-	generator, found := crypto.FindKeyPairGenerator(requestBody.Algorithm)
-	if !found {
+	if algorithmIsInvalid {
 		WriteErrorResponse(response, http.StatusBadRequest, []string{
 			"algorithm is not supported",
 		})
-		return
-	}
-
-	device, err := domain.BuildSignatureDevice(id, generator, requestBody.Label)
-	if err != nil {
-		// In a real application, this error would be logged and sent to an error notification service
-		WriteInternalError(response)
-		return
-	}
-
-	err = s.signatureDeviceRepository.Create(device)
-	if err != nil {
-		// In a real application, this error would be logged and sent to an error notification service
-		WriteInternalError(response)
 		return
 	}
 
@@ -174,15 +182,17 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 		return
 	}
 
-	mutex := s.signatureDeviceRepository.Mutex()
-	mutex.RLock()
-	defer mutex.RUnlock()
-	device, ok, err := s.signatureDeviceRepository.Find(deviceID)
+	var device domain.SignatureDevice
+	var deviceFound bool
+	err = s.signatureDeviceRepository.Tx(func() error {
+		device, deviceFound, err = s.signatureDeviceRepository.Find(deviceID)
+		return err
+	})
 	if err != nil {
 		WriteInternalError(response)
 		return
 	}
-	if !ok {
+	if !deviceFound {
 		WriteErrorResponse(response, http.StatusNotFound, []string{
 			"signature device not found",
 		})
@@ -210,10 +220,14 @@ func (s *SignatureService) FindSignatureDevice(response http.ResponseWriter, req
 type ListSignatureDevicesResponse = []ApiSignatureDevice
 
 func (s *SignatureService) ListSignatureDevice(response http.ResponseWriter, request *http.Request) {
-	mutex := s.signatureDeviceRepository.Mutex()
-	mutex.RLock()
-	defer mutex.RUnlock()
-	devices, err := s.signatureDeviceRepository.List()
+	var devices []domain.SignatureDevice
+	err := s.signatureDeviceRepository.Tx(func() error {
+		d, err := s.signatureDeviceRepository.List()
+		if err != nil {
+			return err
+		}
+		devices = d
+	})
 	if err != nil {
 		WriteInternalError(response)
 		return

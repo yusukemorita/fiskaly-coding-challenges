@@ -58,8 +58,10 @@ func (repository InMemorySignatureDeviceRepository) List() ([]domain.SignatureDe
 	return allDevices, nil
 }
 
-func (repository InMemorySignatureDeviceRepository) Mutex() *sync.RWMutex {
-	return repository.mutex
+func (repository InMemorySignatureDeviceRepository) Tx(do func() error) error {
+	repository.mutex.Lock()
+	defer repository.mutex.Unlock()
+	return do()
 }
 
 func NewInMemorySignatureDeviceRepository() InMemorySignatureDeviceRepository {

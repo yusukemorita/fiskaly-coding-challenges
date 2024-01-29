@@ -3,7 +3,6 @@ package domain
 import (
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/google/uuid"
 )
@@ -54,14 +53,11 @@ func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...str
 }
 
 type SignatureDeviceRepository interface {
-	// WARNING: all operations must obtain a read lock or a write lock from `Mutex()`
+	// WARNING: all operations must be executed inside Tx(func() error)
 	Create(device SignatureDevice) error
 	Update(device SignatureDevice) error
 	Find(id uuid.UUID) (SignatureDevice, bool, error)
 	List() ([]SignatureDevice, error)
 
-	// Only necessary while data is persisted in memory.
-	// If data is migrated to external databases, some other method
-	// (e.g. transactions and locking reads for MySQL) should be used.
-	Mutex() *sync.RWMutex
+	Tx(do func() error) error
 }
