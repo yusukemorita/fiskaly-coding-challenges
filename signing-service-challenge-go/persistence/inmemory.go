@@ -41,7 +41,11 @@ func (repository InMemorySignatureDeviceRepository) Find(id uuid.UUID) (domain.S
 	return device, true, nil
 }
 
-// order is not guaranteed
+// Order is not guaranteed
+// ref: https://go.dev/blog/maps
+// > When iterating over a map with a range loop, the iteration order is not specified and is not guaranteed
+// > to be the same from one iteration to the next. If you require a stable iteration order you must maintain
+// > a separate data structure that specifies that order.
 func (repository InMemorySignatureDeviceRepository) List() ([]domain.SignatureDevice, error) {
 	allDevices := []domain.SignatureDevice{}
 
