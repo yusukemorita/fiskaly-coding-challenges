@@ -6,33 +6,53 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func SignTransaction(
-	device SignatureDevice,
-	deviceRepository SignatureDeviceRepository,
+	deviceID uuid.UUID,
+	repositoryProvider SignatureDeviceRepositoryProvider,
 	dataToBeSigned string,
 ) (
-	base64EncodedSignature string,
+	deviceFound bool,
+	encodedSignature string,
 	signedData string,
 	err error,
 ) {
-	securedDataToBeSigned := SecureDataToBeSigned(device, dataToBeSigned)
+	txErr := repositoryProvider.WriteTx(func(repository SignatureDeviceRepository) error {
+		device, ok, err := repository.Find(deviceID)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			deviceFound = false
+			return nil
+		}
+		deviceFound = true
 
-	signature, err := device.Sign(securedDataToBeSigned)
-	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed to sign transaction: %s", err))
+		signedData = SecureDataToBeSigned(device, dataToBeSigned)
+		signature, err := device.Sign(signedData)
+		if err != nil {
+			return errors.New(fmt.Sprintf("failed to sign transaction: %s", err))
+		}
+		encodedSignature = base64.StdEncoding.EncodeToString(signature)
+
+		device.Base64EncodedLastSignature = encodedSignature
+		device.SignatureCounter++
+		err = repository.Update(device)
+		if err != nil {
+			return errors.New(fmt.Sprintf("failed to update signature device: %s", err))
+		}
+
+		return nil
+	})
+
+	if txErr != nil {
+		return false, "", "", txErr
 	}
-	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 
-	device.Base64EncodedLastSignature = encodedSignature
-	device.SignatureCounter++
-	err = deviceRepository.Update(device)
-	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed to update signature device: %s", err))
-	}
-
-	return encodedSignature, securedDataToBeSigned, nil
+	return
 }
 
 func SecureDataToBeSigned(device SignatureDevice, data string) string {

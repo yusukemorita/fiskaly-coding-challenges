@@ -14,11 +14,27 @@ import (
 )
 
 func TestSignTransaction(t *testing.T) {
+	t.Run("returns deviceFound: false when device with id does not exist", func(t *testing.T) {
+		dataToBeSigned := "some-transaction-data"
+		provider := persistence.NewInMemorySignatureDeviceRepositoryProvider(
+			persistence.NewInMemorySignatureDeviceRepository(),
+		)
+		deviceID := uuid.MustParse("121fe402-762a-411a-8eeb-9e6c3ca16886")
+
+		deviceFound, _, _, err := domain.SignTransaction(deviceID, provider, dataToBeSigned)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if deviceFound {
+			t.Fatal("device should not be found, as it does not exist")
+		}
+	})
+
 	t.Run("successfully signs when device is being used for the first time", func(t *testing.T) {
 		dataToBeSigned := "some-transaction-data"
 		repository := persistence.NewInMemorySignatureDeviceRepository()
-		deviceId := uuid.MustParse("121fe402-762a-411a-8eeb-9e6c3ca16886")
-		device, err := domain.BuildSignatureDevice(deviceId, crypto.RSAGenerator{})
+		deviceID := uuid.MustParse("121fe402-762a-411a-8eeb-9e6c3ca16886")
+		device, err := domain.BuildSignatureDevice(deviceID, crypto.RSAGenerator{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -27,9 +43,16 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		encodedSignature, signedData, err := domain.SignTransaction(device, repository, dataToBeSigned)
+		deviceFound, encodedSignature, signedData, err := domain.SignTransaction(
+			deviceID,
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+			dataToBeSigned,
+		)
 		if err != nil {
 			t.Fatal(err)
+		}
+		if !deviceFound {
+			t.Fatal("device not found")
 		}
 
 		base64EncodedDeviceId := "MTIxZmU0MDItNzYyYS00MTFhLThlZWItOWU2YzNjYTE2ODg2"
@@ -65,7 +88,7 @@ func TestSignTransaction(t *testing.T) {
 
 		// check updates to signature device
 		// refetch the device from the repository to reflect updates
-		device, ok, err := repository.Find(deviceId)
+		device, ok, err := repository.Find(deviceID)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -23,8 +23,11 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		id := "invalid-uuid"
 		algorithmName := crypto.RSAGenerator{}.AlgorithmName()
 
-		repository := persistence.NewInMemorySignatureDeviceRepository()
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(
+				persistence.NewInMemorySignatureDeviceRepository(),
+			),
+		)
 		server := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer server.Close()
 
@@ -67,7 +70,9 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 			KeyPair: keyPair,
 		})
 
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		server := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer server.Close()
 
@@ -99,8 +104,11 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		id := uuid.New()
 		algorithmName := "ABC"
 
-		repository := persistence.NewInMemorySignatureDeviceRepository()
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(
+				persistence.NewInMemorySignatureDeviceRepository(),
+			),
+		)
 		server := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer server.Close()
 
@@ -133,7 +141,9 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		algorithmName := crypto.RSAGenerator{}.AlgorithmName()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		server := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer server.Close()
 
@@ -183,7 +193,9 @@ func TestCreateSignatureDeviceResponse(t *testing.T) {
 		label := "my RSA key"
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		server := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer server.Close()
 
@@ -233,8 +245,11 @@ func TestSignTransaction(t *testing.T) {
 	t.Run("returns not found when device with id does not exist", func(t *testing.T) {
 		id := uuid.NewString()
 
-		repository := persistence.NewInMemorySignatureDeviceRepository()
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(
+				persistence.NewInMemorySignatureDeviceRepository(),
+			),
+		)
 		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -275,7 +290,9 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -356,7 +373,9 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -435,7 +454,9 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -516,7 +537,9 @@ func TestSignTransaction(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		testServer := httptest.NewServer(api.NewServer(":8888", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -586,7 +609,9 @@ func TestFindSignatureDevice(t *testing.T) {
 		id := uuid.NewString()
 
 		repository := persistence.NewInMemorySignatureDeviceRepository()
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		testServer := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -628,7 +653,9 @@ func TestFindSignatureDevice(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		signatureService := api.NewSignatureService(repository)
+		signatureService := api.NewSignatureService(
+			persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+		)
 		testServer := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 		defer testServer.Close()
 
@@ -692,7 +719,9 @@ func TestListSignatureDevices(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	signatureService := api.NewSignatureService(repository)
+	signatureService := api.NewSignatureService(
+		persistence.NewInMemorySignatureDeviceRepositoryProvider(repository),
+	)
 	testServer := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 	defer testServer.Close()
 

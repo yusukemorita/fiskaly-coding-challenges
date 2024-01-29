@@ -3,10 +3,37 @@ package persistence
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/fiskaly/coding-challenges/signing-service-challenge/domain"
 	"github.com/google/uuid"
 )
+
+type InMemorySignatureDeviceRepositoryProvider struct {
+	repository InMemorySignatureDeviceRepository
+	mutex      *sync.RWMutex
+}
+
+// Use when any of the repository methods in do() write
+func (provider InMemorySignatureDeviceRepositoryProvider) WriteTx(do func(domain.SignatureDeviceRepository) error) error {
+	provider.mutex.Lock()
+	defer provider.mutex.Unlock()
+	return do(provider.repository)
+}
+
+// Use when none of the repository methods in do() write
+func (provider InMemorySignatureDeviceRepositoryProvider) ReadTx(do func(domain.SignatureDeviceRepository) error) error {
+	provider.mutex.RLock()
+	defer provider.mutex.RUnlock()
+	return do(provider.repository)
+}
+
+func NewInMemorySignatureDeviceRepositoryProvider(repository InMemorySignatureDeviceRepository) InMemorySignatureDeviceRepositoryProvider {
+	return InMemorySignatureDeviceRepositoryProvider{
+		repository: repository,
+		mutex:      &sync.RWMutex{},
+	}
+}
 
 type InMemorySignatureDeviceRepository struct {
 	devices map[uuid.UUID]domain.SignatureDevice

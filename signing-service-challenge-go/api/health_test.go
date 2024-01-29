@@ -10,8 +10,11 @@ import (
 )
 
 func TestHealth(t *testing.T) {
-	repository := persistence.NewInMemorySignatureDeviceRepository()
-	signatureService := api.NewSignatureService(repository)
+	signatureService := api.NewSignatureService(
+		persistence.NewInMemorySignatureDeviceRepositoryProvider(
+			persistence.NewInMemorySignatureDeviceRepository(),
+		),
+	)
 	server := httptest.NewServer(api.NewServer("", signatureService).HTTPHandler())
 	defer server.Close()
 
