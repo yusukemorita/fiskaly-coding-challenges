@@ -61,7 +61,8 @@ func BuildSignatureDevice(id uuid.UUID, generator KeyPairGenerator, label ...str
 // that every operation will be executed inside a transaction.
 type SignatureDeviceRepository interface {
 	Create(device SignatureDevice) error
-	Update(device SignatureDevice) error
+	// Increment the signatureCounter, and update the lastSignature
+	MarkSignatureCreated(deviceID uuid.UUID, newSignature string) error
 	Find(id uuid.UUID) (SignatureDevice, bool, error)
 	List() ([]SignatureDevice, error)
 }
