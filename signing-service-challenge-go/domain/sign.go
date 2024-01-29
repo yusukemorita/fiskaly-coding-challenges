@@ -6,17 +6,28 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 func SignTransaction(
-	device SignatureDevice,
+	deviceID uuid.UUID,
 	deviceRepository SignatureDeviceRepository,
 	dataToBeSigned string,
 ) (
+	deviceFound bool,
 	base64EncodedSignature string,
 	signedData string,
 	err error,
 ) {
+	device, ok, err := deviceRepository.Find(deviceID)
+	if err != nil {
+		return false, "", "", err
+	}
+	if !ok {
+		return false, "", "", nil
+	}
+
 	// 1. Read `lastSignature` and `signatureCounter` from `device`
 	//    (these values cannot change until update is complete)
 	//    If data was persisted in MySQL, for example, a locking read would be used
@@ -25,7 +36,7 @@ func SignTransaction(
 	// 2. Use the data read in 1. to create the signature
 	signature, err := device.Sign(securedDataToBeSigned)
 	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed to sign transaction: %s", err))
+		return false, "", "", errors.New(fmt.Sprintf("failed to sign transaction: %s", err))
 	}
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 
@@ -34,10 +45,10 @@ func SignTransaction(
 	device.SignatureCounter++
 	err = deviceRepository.Update(device)
 	if err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed to update signature device: %s", err))
+		return false, "", "", errors.New(fmt.Sprintf("failed to update signature device: %s", err))
 	}
 
-	return encodedSignature, securedDataToBeSigned, nil
+	return true, encodedSignature, securedDataToBeSigned, nil
 }
 
 func SecureDataToBeSigned(device SignatureDevice, data string) string {

@@ -125,18 +125,6 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 		return
 	}
 
-	device, ok, err := s.signatureDeviceRepository.Find(deviceID)
-	if err != nil {
-		WriteInternalError(response)
-		return
-	}
-	if !ok {
-		WriteErrorResponse(response, http.StatusNotFound, []string{
-			"signature device not found",
-		})
-		return
-	}
-
 	var requestBody SignTransactionRequest
 	err = json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
@@ -146,13 +134,19 @@ func (s *SignatureService) SignTransaction(response http.ResponseWriter, request
 		return
 	}
 
-	encodedSignature, signedData, err := domain.SignTransaction(
-		device,
+	deviceFound, encodedSignature, signedData, err := domain.SignTransaction(
+		deviceID,
 		s.signatureDeviceRepository,
 		requestBody.DataToBeSigned,
 	)
 	if err != nil {
 		WriteInternalError(response)
+		return
+	}
+	if !deviceFound {
+		WriteErrorResponse(response, http.StatusNotFound, []string{
+			"signature device not found",
+		})
 		return
 	}
 

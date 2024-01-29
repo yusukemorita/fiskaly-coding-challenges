@@ -65,5 +65,6 @@ func (repository InMemorySignatureDeviceRepository) Mutex() *sync.RWMutex {
 func NewInMemorySignatureDeviceRepository() InMemorySignatureDeviceRepository {
 	return InMemorySignatureDeviceRepository{
 		devices: map[uuid.UUID]domain.SignatureDevice{},
+		mutex:   &sync.RWMutex{},
 	}
 }
