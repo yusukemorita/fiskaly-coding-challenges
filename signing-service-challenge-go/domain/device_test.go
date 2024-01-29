@@ -16,6 +16,10 @@ func (keyPair MockKeyPair) EncodedPublicKey() (string, error) {
 	return "", nil
 }
 
+func (keyPair MockKeyPair) AlgorithmName() string {
+	return ""
+}
+
 type MockKeyPairGenerator struct{}
 
 func (g MockKeyPairGenerator) AlgorithmName() string {
